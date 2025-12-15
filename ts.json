@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-14",
+  "trustedSites": [
+    "jxoj.github.io",
+    "usejxo.github.io"
+  ],
+  "officialAccountManager": "https://jxoj.github.io/Jxo/account-manager.html",
+  "warningMessage": "⚠️ SECURITY WARNING: You are about to sign in on an untrusted site. It could steal your account.",
+  "firstTimeMessage": "🔒 IMPORTANT: Be careful when signing in to sites without jxo in the url somewhere, or that are not hosted on github pages, you can find a list of safe domains here: https://jxoj.github.io/Jxo/sd."
+}

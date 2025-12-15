@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Manage Account - Jxo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+html,body{
+  margin:0;
+  min-height:100%;
+  background:#121212;
+  font-family:system-ui;
+  color:#eaeaea;
+}
+
+.container{
+  max-width:900px;
+  margin:0 auto;
+  padding:40px 20px;
+}
+
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:40px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.logo-circle{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#4285f4,#34a853);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  font-weight:700;
+}
+
+.card{
+  background:#1c1c1c;
+  border-radius:16px;
+  padding:32px;
+  margin-bottom:24px;
+  border:1px solid #2a2a2a;
+}
+
+.card-title{
+  font-size:20px;
+  font-weight:600;
+  margin:0 0 20px;
+}
+
+.profile-section{
+  display:flex;
+  align-items:center;
+  gap:24px;
+  margin-bottom:24px;
+}
+
+.profile-pic{
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#8ab4f8,#4285f4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px;
+  font-weight:700;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .2s;
+  position:relative;
+}
+
+.profile-pic:hover{
+  transform:scale(1.05);
+}
+
+.profile-pic:hover::after{
+  content:'Change';
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:600;
+}
+
+.profile-pic img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.profile-info h2{
+  margin:0 0 8px;
+  font-size:24px;
+}
+
+.profile-info p{
+  margin:0;
+  color:#aaa;
+  font-size:14px;
+}
+
+.input-group{
+  margin-bottom:20px;
+}
+
+.label{
+  display:block;
+  font-size:14px;
+  color:#aaa;
+  margin-bottom:8px;
+  font-weight:500;
+}
+
+.input{
+  width:100%;
+  padding:12px;
+  font-size:15px;
+  background:#121212;
+  border:1px solid #333;
+  border-radius:8px;
+  color:#fff;
+  box-sizing:border-box;
+  transition:border-color .2s;
+}
+
+.input:focus{
+  outline:none;
+  border-color:#8ab4f8;
+}
+
+.input:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.btn{
+  padding:12px 24px;
+  border:none;
+  border-radius:20px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.btn-primary{
+  background:#8ab4f8;
+  color:#121212;
+}
+
+.btn-primary:hover{
+  background:#a8c7fa;
+}
+
+.btn-primary:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.btn-secondary{
+  background:#333;
+  color:#eaeaea;
+}
+
+.btn-secondary:hover{
+  background:#444;
+}
+
+.btn-danger{
+  background:#f44336;
+  color:#fff;
+}
+
+.btn-danger:hover{
+  background:#e53935;
+}
+
+.btn-group{
+  display:flex;
+  gap:12px;
+  margin-top:20px;
+}
+
+.status{
+  margin-top:12px;
+  font-size:14px;
+  min-height:20px;
+}
+
+.status.success{
+  color:#81c784;
+}
+
+.status.error{
+  color:#ff8a80;
+}
+
+.danger-zone{
+  border-color:#f44336;
+}
+
+.danger-zone .card-title{
+  color:#f44336;
+}
+
+#photoFile{
+  display:none;
+}
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal.active{
+  display:flex;
+}
+
+.modal-content{
+  background:#1c1c1c;
+  border-radius:16px;
+  padding:32px;
+  max-width:400px;
+  width:90%;
+  border:1px solid #2a2a2a;
+}
+
+.modal-title{
+  font-size:20px;
+  font-weight:600;
+  margin:0 0 16px;
+}
+
+.modal-text{
+  color:#aaa;
+  margin-bottom:24px;
+  line-height:1.5;
+}
+
+.loading{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+}
+
+.loading.active{
+  display:flex;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:4px solid #333;
+  border-top-color:#8ab4f8;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-circle">J</div>
+      <strong style="font-size:22px">Jxo Account</strong>
+    </div>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="card">
+    <h3 class="card-title">Profile</h3>
+    <div class="profile-section">
+      <div class="profile-pic" id="profilePic" onclick="document.getElementById('photoFile').click()">
+        <span id="profileInitial">?</span>
+      </div>
+      <div class="profile-info">
+        <h2 id="displayNameText">Loading...</h2>
+        <p id="emailText">Loading...</p>
+      </div>
+    </div>
+    <input type="file" id="photoFile" accept="image/*">
+    
+    <div class="input-group">
+      <label class="label">Display Name</label>
+      <input type="text" class="input" id="newDisplayName" placeholder="Your name">
+    </div>
+    
+    <div class="btn-group">
+      <button class="btn btn-primary" id="updateProfileBtn">Update Profile</button>
+    </div>
+    <div class="status" id="profileStatus"></div>
+  </div>
+
+  <!-- Email Card -->
+  <div class="card">
+    <h3 class="card-title">Email Address</h3>
+    <div class="input-group">
+      <label class="label">Current Email</label>
+      <input type="email" class="input" id="currentEmail" disabled>
+    </div>
+    <div class="input-group">
+      <label class="label">New Email</label>
+      <input type="email" class="input" id="newEmail" placeholder="newemail@example.com">
+    </div>
+    <div class="input-group">
+      <label class="label">Confirm Password</label>
+      <input type="password" class="input" id="emailPassword" placeholder="Enter your password">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="updateEmailBtn">Update Email</button>
+    </div>
+    <div class="status" id="emailStatus"></div>
+  </div>
+
+  <!-- Password Card -->
+  <div class="card">
+    <h3 class="card-title">Password</h3>
+    <div class="input-group">
+      <label class="label">Current Password</label>
+      <input type="password" class="input" id="currentPassword" placeholder="Enter current password">
+    </div>
+    <div class="input-group">
+      <label class="label">New Password</label>
+      <input type="password" class="input" id="newPassword" placeholder="Enter new password">
+    </div>
+    <div class="input-group">
+      <label class="label">Confirm New Password</label>
+      <input type="password" class="input" id="confirmPassword" placeholder="Confirm new password">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="updatePasswordBtn">Change Password</button>
+    </div>
+    <div class="status" id="passwordStatus"></div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="card danger-zone">
+    <h3 class="card-title">Danger Zone</h3>
+    <p style="color:#aaa;margin-bottom:20px;line-height:1.5">
+      Once you delete your account, there is no going back. This will permanently delete your profile, settings, and all associated data.
+    </p>
+    <button class="btn btn-danger" id="deleteAccountBtn">Delete Account</button>
+    <div class="status" id="deleteStatus"></div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+  <div class="modal-content">
+    <h3 class="modal-title">Delete Account?</h3>
+    <p class="modal-text">
+      This action cannot be undone. All your data will be permanently deleted.
+    </p>
+    <div class="input-group">
+      <label class="label">Enter your password to confirm</label>
+      <input type="password" class="input" id="deletePassword" placeholder="Password">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete Forever</button>
+      <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+    </div>
+    <div class="status" id="modalStatus"></div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+/* ---- FIREBASE ---- */
+const app = initializeApp({
+  apiKey:"AIzaSyDUFBrPl8YJwkmqwibq730VX2mtCkxaMeM",
+  authDomain:"jxoaccount.firebaseapp.com",
+  projectId:"jxoaccount"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ---- ELEMENTS ---- */
+const profilePic = document.getElementById("profilePic");
+const profileInitial = document.getElementById("profileInitial");
+const photoFile = document.getElementById("photoFile");
+const displayNameText = document.getElementById("displayNameText");
+const emailText = document.getElementById("emailText");
+const newDisplayName = document.getElementById("newDisplayName");
+const currentEmail = document.getElementById("currentEmail");
+const newEmail = document.getElementById("newEmail");
+const emailPassword = document.getElementById("emailPassword");
+const currentPassword = document.getElementById("currentPassword");
+const newPassword = document.getElementById("newPassword");
+const confirmPassword = document.getElementById("confirmPassword");
+const deletePassword = document.getElementById("deletePassword");
+
+const updateProfileBtn = document.getElementById("updateProfileBtn");
+const updateEmailBtn = document.getElementById("updateEmailBtn");
+const updatePasswordBtn = document.getElementById("updatePasswordBtn");
+const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+
+const profileStatus = document.getElementById("profileStatus");
+const emailStatus = document.getElementById("emailStatus");
+const passwordStatus = document.getElementById("passwordStatus");
+const deleteStatus = document.getElementById("deleteStatus");
+const modalStatus = document.getElementById("modalStatus");
+
+const deleteModal = document.getElementById("deleteModal");
+const loading = document.getElementById("loading");
+
+let currentUser = null;
+let uploadedPhotoBase64 = null;
+
+/* ---- AUTH CHECK ---- */
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    // Redirect to login with return URL
+    window.location.href = "login.html?redirect=" + encodeURIComponent(window.location.href);
+    return;
+  }
+  
+  currentUser = user;
+  await loadUserData();
+});
+
+/* ---- LOAD USER DATA ---- */
+async function loadUserData(){
+  displayNameText.textContent = currentUser.displayName || "No name set";
+  emailText.textContent = currentUser.email;
+  currentEmail.value = currentUser.email;
+  newDisplayName.value = currentUser.displayName || "";
+  
+  // Load profile pic from Firestore
+  try{
+    const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+    if(docSnap.exists() && docSnap.data().photoURL){
+      const photoURL = docSnap.data().photoURL;
+      profilePic.innerHTML = `<img src="${photoURL}" alt="Profile">`;
+    } else {
+      const initial = currentUser.displayName ? currentUser.displayName[0].toUpperCase() : currentUser.email[0].toUpperCase();
+      profileInitial.textContent = initial;
+    }
+  } catch(e){
+    console.error("Failed to load photo:", e);
+  }
+}
+
+/* ---- PHOTO UPLOAD ---- */
+photoFile.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 200;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      const scale = Math.max(size / img.width, size / img.height);
+      const x = (size / 2) - (img.width / 2) * scale;
+      const y = (size / 2) - (img.height / 2) * scale;
+      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+      
+      uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+      profilePic.innerHTML = `<img src="${uploadedPhotoBase64}" alt="Profile">`;
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ---- UPDATE PROFILE ---- */
+updateProfileBtn.onclick = async () => {
+  profileStatus.textContent = "";
+  profileStatus.className = "status";
+  
+  if(!newDisplayName.value.trim()){
+    profileStatus.textContent = "Display name cannot be empty";
+    profileStatus.classList.add("error");
+    return;
+  }
+  
+  loading.classList.add("active");
+  updateProfileBtn.disabled = true;
+  
+  try{
+    // Update display name in Firebase Auth
+    await updateProfile(currentUser, {
+      displayName: newDisplayName.value.trim()
+    });
+    
+    // Save to Firestore (for profile data + photo)
+    const userData = {
+      displayName: newDisplayName.value.trim()
+    };
+    
+    if(uploadedPhotoBase64){
+      userData.photoURL = uploadedPhotoBase64;
+    }
+    
+    await setDoc(doc(db, "users", currentUser.uid), userData, { merge: true });
+    
+    // Update localStorage accounts
+    updateLocalStorage(userData);
+    
+    profileStatus.textContent = "✓ Profile updated successfully!";
+    profileStatus.classList.add("success");
+    displayNameText.textContent = newDisplayName.value.trim();
+    uploadedPhotoBase64 = null;
+  } catch(e){
+    console.error(e);
+    profileStatus.textContent = e.message;
+    profileStatus.classList.add("error");
+  } finally {
+    loading.classList.remove("active");
+    updateProfileBtn.disabled = false;
+  }
+};
+
+/* ---- UPDATE EMAIL ---- */
+updateEmailBtn.onclick = async () => {
+  emailStatus.textContent = "";
+  emailStatus.className = "status";
+  
+  if(!newEmail.value || !emailPassword.value){
+    emailStatus.textContent = "Please fill in all fields";
+    emailStatus.classList.add("error");
+    return;
+  }
+  
+  if(newEmail.value === currentUser.email){
+    emailStatus.textContent = "New email must be different";
+    emailStatus.classList.add("error");
+    return;
+  }
+  
+  loading.classList.add("active");
+  updateEmailBtn.disabled = true;
+  
+  try{
+    // Reauthenticate first
+    const credential = EmailAuthProvider.credential(currentUser.email, emailPassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    
+    // Update email
+    await updateEmail(currentUser, newEmail.value);
+    
+    // Update localStorage
+    updateLocalStorage({ email: newEmail.value });
+    
+    emailStatus.textContent = "✓ Email updated successfully!";
+    emailStatus.classList.add("success");
+    currentEmail.value = newEmail.value;
+    emailText.textContent = newEmail.value;
+    newEmail.value = "";
+    emailPassword.value = "";
+  } catch(e){
+    console.error(e);
+    emailStatus.textContent = e.message;
+    emailStatus.classList.add("error");
+  } finally {
+    loading.classList.remove("active");
+    updateEmailBtn.disabled = false;
+  }
+};
+
+/* ---- UPDATE PASSWORD ---- */
+updatePasswordBtn.onclick = async () => {
+  passwordStatus.textContent = "";
+  passwordStatus.className = "status";
+  
+  if(!currentPassword.value || !newPassword.value || !confirmPassword.value){
+    passwordStatus.textContent = "Please fill in all fields";
+    passwordStatus.classList.add("error");
+    return;
+  }
+  
+  if(newPassword.value !== confirmPassword.value){
+    passwordStatus.textContent = "New passwords don't match";
+    passwordStatus.classList.add("error");
+    return;
+  }
+  
+  if(newPassword.value.length < 6){
+    passwordStatus.textContent = "Password must be at least 6 characters";
+    passwordStatus.classList.add("error");
+    return;
+  }
+  
+  loading.classList.add("active");
+  updatePasswordBtn.disabled = true;
+  
+  try{
+    // Reauthenticate first
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    
+    // Update password
+    await updatePassword(currentUser, newPassword.value);
+    
+    passwordStatus.textContent = "✓ Password changed successfully!";
+    passwordStatus.classList.add("success");
+    currentPassword.value = "";
+    newPassword.value = "";
+    confirmPassword.value = "";
+  } catch(e){
+    console.error(e);
+    passwordStatus.textContent = e.message;
+    passwordStatus.classList.add("error");
+  } finally {
+    loading.classList.remove("active");
+    updatePasswordBtn.disabled = false;
+  }
+};
+
+/* ---- DELETE ACCOUNT ---- */
+deleteAccountBtn.onclick = () => {
+  deleteModal.classList.add("active");
+  modalStatus.textContent = "";
+  deletePassword.value = "";
+};
+
+cancelDeleteBtn.onclick = () => {
+  deleteModal.classList.remove("active");
+};
+
+confirmDeleteBtn.onclick = async () => {
+  modalStatus.textContent = "";
+  modalStatus.className = "status";
+  
+  if(!deletePassword.value){
+    modalStatus.textContent = "Please enter your password";
+    modalStatus.classList.add("error");
+    return;
+  }
+  
+  loading.classList.add("active");
+  confirmDeleteBtn.disabled = true;
+  
+  try{
+    // Reauthenticate
+    const credential = EmailAuthProvider.credential(currentUser.email, deletePassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    
+    // Delete Firestore data (profile + all app data)
+    try{
+      await deleteDoc(doc(db, "users", currentUser.uid));
+    } catch(e){
+      console.error("Failed to delete Firestore data:", e);
+    }
+    
+    // Remove from localStorage
+    const accounts = JSON.parse(localStorage.getItem("jxoAccounts") || "[]");
+    const filtered = accounts.filter(a => a.email !== currentUser.email);
+    localStorage.setItem("jxoAccounts", JSON.stringify(filtered));
+    
+    // Delete user
+    await deleteUser(currentUser);
+    
+    // Redirect to login
+    window.location.href = "login.html";
+  } catch(e){
+    console.error(e);
+    modalStatus.textContent = e.message;
+    modalStatus.classList.add("error");
+    confirmDeleteBtn.disabled = false;
+    loading.classList.remove("active");
+  }
+};
+
+/* ---- UPDATE LOCALSTORAGE ---- */
+function updateLocalStorage(changes){
+  const accounts = JSON.parse(localStorage.getItem("jxoAccounts") || "[]");
+  const index = accounts.findIndex(a => a.uid === currentUser.uid);
+  
+  if(index >= 0){
+    if(changes.displayName) accounts[index].displayName = changes.displayName;
+    if(changes.email) accounts[index].email = changes.email;
+    if(changes.photoURL) accounts[index].photoURL = changes.photoURL;
+    localStorage.setItem("jxoAccounts", JSON.stringify(accounts));
+  }
+}
+</script>
+
+</body>
+</html>
