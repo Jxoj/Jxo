@@ -511,7 +511,7 @@
     </div>
   </div>
 
-  <script src="https://jxoj.github.io/Jxo/sdk.js"></script>
+  <script src="https://jxoj.github.io/Jxo/jxo-sdk.js"></script>
   <script>
     const APP_ID = "com.jxo.search";
     const GOOGLE_API_KEY = "AIzaSyB55B9TOOSy1IcIr4AO0ibpqilV9Hpw4P4";
@@ -535,15 +535,21 @@
 
     async function initializeApp() {
       try {
+        console.log('Initializing Jxo SDK...');
         await Jxo.init(APP_ID);
         currentUser = Jxo.getUser();
+        console.log('Current user:', currentUser);
+        
+        // Always update UI whether logged in or not
+        updateUIForUser();
         
         if (currentUser) {
-          updateUIForUser();
           await loadUserData();
         }
       } catch (error) {
         console.error('Failed to initialize Jxo:', error);
+        // Even if init fails, update UI to attach login button handler
+        updateUIForUser();
       }
     }
 
@@ -577,13 +583,24 @@
           location.reload();
         });
       } else {
+        // NOT LOGGED IN - recreate button with listener
         accountSection.innerHTML = `
           <button class="btn btn-primary" id="loginBtn">Sign In</button>
         `;
         
-        document.getElementById('loginBtn').addEventListener('click', () => {
-          Jxo.login();
-        });
+        // Attach listener to the login button
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+          loginBtn.addEventListener('click', () => {
+            console.log('Login button clicked');
+            if (typeof Jxo !== 'undefined') {
+              Jxo.login();
+            } else {
+              console.error('Jxo SDK not loaded');
+              alert('Authentication system not loaded. Please refresh the page.');
+            }
+          });
+        }
       }
     }
 
@@ -827,6 +844,7 @@
       }
     }
 
+    // Initialize the app when page loads
     initializeApp();
   </script>
 </body>
