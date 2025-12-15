@@ -12,8 +12,8 @@
 (function(window) {
   'use strict';
 
-  const LOGIN_URL = "https://jxoj.github.io/Jxo/login.html";
-  const ACCOUNT_MANAGER_URL = "https://jxoj.github.io/Jxo/account-manager.html";
+  const LOGIN_URL = "https://jxoj.github.io/Jxo/account";
+  const ACCOUNT_MANAGER_URL = "https://jxoj.github.io/Jxo/account/manage";
   const TRUSTED_SITES_URL = "https://jxoj.github.io/Jxo/ts.json";
   const MAX_APP_DATA_SIZE = 10240; // 10KB limit per app per user
 
