@@ -253,9 +253,9 @@
 
     .result-item {
       background: #1c1c1c;
-      padding: 20px 24px;
+      padding: 24px;
       border-radius: 16px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       border: 1px solid #333;
       transition: all 0.2s;
     }
@@ -269,15 +269,19 @@
     .result-url {
       color: #8ab4f8;
       font-size: 13px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .result-title {
       color: #eaeaea;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 500;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       cursor: pointer;
+      line-height: 1.4;
     }
 
     .result-title:hover {
@@ -287,7 +291,7 @@
     .result-description {
       color: #aaa;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .loading {
@@ -295,6 +299,50 @@
       color: #8ab4f8;
       font-size: 16px;
       margin-top: 20px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 30px;
+      margin-bottom: 40px;
+    }
+
+    .page-btn {
+      background: #1c1c1c;
+      color: #8ab4f8;
+      border: 1px solid #333;
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .page-btn:hover {
+      background: #252525;
+      border-color: #444;
+    }
+
+    .page-btn.active {
+      background: #8ab4f8;
+      color: #121212;
+      border-color: #8ab4f8;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-btn:disabled:hover {
+      background: #1c1c1c;
+      border-color: #333;
     }
 
     .section-card {
@@ -416,6 +464,16 @@
       border-color: #8ab4f8;
     }
 
+    .error-message {
+      background: #2a1a1a;
+      border: 1px solid #662222;
+      color: #ff6b6b;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
       .header {
         padding: 16px 24px;
@@ -447,6 +505,16 @@
 
       .wallpaper-options {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+
+      .pagination {
+        gap: 6px;
+      }
+
+      .page-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 35px;
       }
     }
   </style>
@@ -490,6 +558,8 @@
 
       <div class="results" id="results"></div>
       <div class="loading" id="loading" style="display: none;">Searching...</div>
+      
+      <div class="pagination" id="pagination" style="display: none;"></div>
 
       <div class="section-card" id="historySection" style="display: none;">
         <div class="section-title">Recent Searches</div>
@@ -511,7 +581,7 @@
     </div>
   </div>
 
-  <script src="https://jxoj.github.io/Jxo/sdk.js"></script>
+  <script src="https://jxoj.github.io/Jxo/jxo-sdk.js"></script>
   <script>
     const APP_ID = "com.jxo.search";
     const GOOGLE_API_KEY = "AIzaSyB55B9TOOSy1IcIr4AO0ibpqilV9Hpw4P4";
@@ -521,6 +591,9 @@
     let searchHistory = [];
     let currentTab = 'all';
     let currentWallpaper = 'default';
+    let currentQuery = '';
+    let currentPage = 1;
+    let totalResults = 0;
 
     const wallpapers = [
       { id: 'default', url: '', name: 'Default' },
@@ -540,16 +613,30 @@
         currentUser = Jxo.getUser();
         console.log('Current user:', currentUser);
         
-        // Always update UI whether logged in or not
         updateUIForUser();
         
         if (currentUser) {
           await loadUserData();
         }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+          document.getElementById('searchInput').value = queryParam;
+          currentTab = 'all';
+          updateTabs();
+          performSearch(queryParam, 1);
+        }
       } catch (error) {
         console.error('Failed to initialize Jxo:', error);
-        // Even if init fails, update UI to attach login button handler
         updateUIForUser();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+          document.getElementById('searchInput').value = queryParam;
+          performSearch(queryParam, 1);
+        }
       }
     }
 
@@ -583,12 +670,10 @@
           location.reload();
         });
       } else {
-        // NOT LOGGED IN - recreate button with listener
         accountSection.innerHTML = `
           <button class="btn btn-primary" id="loginBtn">Sign In</button>
         `;
         
-        // Attach listener to the login button
         const loginBtn = document.getElementById('loginBtn');
         if (loginBtn) {
           loginBtn.addEventListener('click', () => {
@@ -713,7 +798,7 @@
           document.getElementById('searchInput').value = query;
           currentTab = 'all';
           updateTabs();
-          performSearch(query);
+          performSearch(query, 1);
         });
       });
     }
@@ -730,85 +815,175 @@
       return date.toLocaleDateString();
     }
 
-    async function performSearch(query) {
+    function renderPagination() {
+      const paginationDiv = document.getElementById('pagination');
+      const totalPages = Math.ceil(totalResults / 10);
+      
+      if (totalPages <= 1) {
+        paginationDiv.style.display = 'none';
+        return;
+      }
+      
+      paginationDiv.style.display = 'flex';
+      
+      let pages = [];
+      
+      pages.push(`
+        <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">
+          ‹ Prev
+        </button>
+      `);
+      
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+      
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+      
+      if (startPage > 1) {
+        pages.push(`<button class="page-btn" data-page="1">1</button>`);
+        if (startPage > 2) {
+          pages.push(`<span style="color: #666; padding: 0 8px;">...</span>`);
+        }
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(`
+          <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
+            ${i}
+          </button>
+        `);
+      }
+      
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          pages.push(`<span style="color: #666; padding: 0 8px;">...</span>`);
+        }
+        pages.push(`<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`);
+      }
+      
+      pages.push(`
+        <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">
+          Next ›
+        </button>
+      `);
+      
+      paginationDiv.innerHTML = pages.join('');
+      
+      document.querySelectorAll('.page-btn').forEach(btn => {
+        if (!btn.disabled) {
+          btn.addEventListener('click', () => {
+            const page = parseInt(btn.dataset.page);
+            performSearch(currentQuery, page);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        }
+      });
+    }
+
+    async function performSearch(query, page = 1) {
       if (!query.trim()) return;
+      
+      currentQuery = query;
+      currentPage = page;
       
       const resultsDiv = document.getElementById('results');
       const loadingDiv = document.getElementById('loading');
       const searchContainer = document.getElementById('searchContainer');
       const historySection = document.getElementById('historySection');
       const wallpaperSection = document.getElementById('wallpaperSection');
+      const paginationDiv = document.getElementById('pagination');
       
       resultsDiv.innerHTML = '';
       historySection.style.display = 'none';
       wallpaperSection.style.display = 'none';
+      paginationDiv.style.display = 'none';
       loadingDiv.style.display = 'block';
       searchContainer.classList.add('has-results');
       
-      addToHistory(query);
+      const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
+      window.history.pushState({}, '', newUrl);
+      
+      if (page === 1) {
+        addToHistory(query);
+      }
       
       try {
-        const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
+        const start = (page - 1) * 10 + 1;
+        const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&start=${start}`;
         const response = await fetch(url);
         const data = await response.json();
         
         loadingDiv.style.display = 'none';
         
         if (data.items && data.items.length > 0) {
+          totalResults = parseInt(data.searchInformation.totalResults);
+          
           resultsDiv.innerHTML = data.items.map(item => `
             <div class="result-item">
               <div class="result-url">${item.displayLink}</div>
-              <div class="result-title" onclick="window.open('${item.link}', '_blank')">${item.title}</div>
-              <div class="result-description">${item.snippet}</div>
+              <div class="result-title" onclick="window.open('${item.link}', '_blank')">
+                ${item.htmlTitle}
+              </div>
+              <div class="result-description">${item.htmlSnippet}</div>
             </div>
           `).join('');
+          
+          renderPagination();
         } else {
-          resultsDiv.innerHTML = '<div style="color: #aaa; text-align: center;">No results found</div>';
+          resultsDiv.innerHTML = '<div class="error-message">No results found. Try a different search query.</div>';
         }
-        
       } catch (error) {
-        loadingDiv.style.display = 'none';
-        resultsDiv.innerHTML = '<div style="color: #aaa; text-align: center;">Search failed. Please try again.</div>';
         console.error('Search error:', error);
+        loadingDiv.style.display = 'none';
+        resultsDiv.innerHTML = '<div class="error-message">Search error. Please try again later.</div>';
       }
     }
 
-    document.getElementById('searchBtn').addEventListener('click', () => {
-      const query = document.getElementById('searchInput').value;
-      currentTab = 'all';
-      updateTabs();
-      performSearch(query);
-    });
+    function updateTabs() {
+      const resultsDiv = document.getElementById('results');
+      const historySection = document.getElementById('historySection');
+      const wallpaperSection = document.getElementById('wallpaperSection');
+      const paginationDiv = document.getElementById('pagination');
+      
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.tab === currentTab) {
+          tab.classList.add('active');
+        }
+      });
+      
+      resultsDiv.innerHTML = '';
+      historySection.style.display = 'none';
+      wallpaperSection.style.display = 'none';
+      paginationDiv.style.display = 'none';
+      
+      if (currentTab === 'history') {
+        showHistory();
+      } else if (currentTab === 'wallpaper') {
+        showWallpaperSettings();
+      }
+    }
 
     document.getElementById('searchInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        const query = e.target.value;
+        const query = e.target.value.trim();
+        if (query) {
+          currentTab = 'all';
+          updateTabs();
+          performSearch(query, 1);
+        }
+      }
+    });
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const query = document.getElementById('searchInput').value.trim();
+      if (query) {
         currentTab = 'all';
         updateTabs();
-        performSearch(query);
-      }
-    });
-
-    document.getElementById('clearHistory').addEventListener('click', async () => {
-      if (confirm('Clear all search history?')) {
-        searchHistory = [];
-        await saveUserData();
-        document.getElementById('historySection').style.display = 'none';
-      }
-    });
-
-    document.getElementById('setCustomWallpaper').addEventListener('click', () => {
-      const input = document.getElementById('customWallpaperInput');
-      const url = input.value.trim();
-      
-      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-        currentWallpaper = url;
-        applyWallpaper(currentWallpaper);
-        saveUserData();
-        input.value = '';
-        alert('Custom wallpaper set!');
-      } else {
-        alert('Please enter a valid image URL (must start with http:// or https://)');
+        performSearch(query, 1);
       }
     });
 
@@ -819,32 +994,22 @@
       });
     });
 
-    function updateTabs() {
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === currentTab);
-      });
-      
-      const resultsDiv = document.getElementById('results');
-      const historySection = document.getElementById('historySection');
-      const wallpaperSection = document.getElementById('wallpaperSection');
-      
-      resultsDiv.innerHTML = '';
-      historySection.style.display = 'none';
-      wallpaperSection.style.display = 'none';
-      
-      if (currentTab === 'history') {
-        showHistory();
-      } else if (currentTab === 'wallpaper') {
-        if (currentUser) {
-          showWallpaperSettings();
-        } else {
-          wallpaperSection.style.display = 'block';
-          wallpaperSection.innerHTML = '<div style="color: #aaa; text-align: center; padding: 20px;">Sign in to customize your wallpaper</div>';
-        }
-      }
-    }
+    document.getElementById('clearHistory').addEventListener('click', () => {
+      searchHistory = [];
+      saveUserData();
+      showHistory();
+    });
 
-    // Initialize the app when page loads
+    document.getElementById('setCustomWallpaper').addEventListener('click', () => {
+      const url = document.getElementById('customWallpaperInput').value.trim();
+      if (url) {
+        currentWallpaper = url;
+        applyWallpaper(currentWallpaper);
+        saveUserData();
+        document.getElementById('customWallpaperInput').value = '';
+      }
+    });
+
     initializeApp();
   </script>
 </body>
