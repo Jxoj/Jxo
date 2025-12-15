@@ -2,141 +2,85 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Manage Account - Jxo</title>
+<title>Jxo Account</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 html,body{
   margin:0;
-  min-height:100%;
+  height:100%;
   background:#121212;
   font-family:system-ui;
   color:#eaeaea;
 }
 
-.container{
-  max-width:900px;
-  margin:0 auto;
-  padding:40px 20px;
-}
-
-.header{
+.center{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  margin-bottom:40px;
+  justify-content:center;
+  min-height:100%;
+  padding:20px;
+}
+
+.card{
+  width:760px;
+  background:#1c1c1c;
+  border-radius:24px;
+  padding:36px 48px;
+  box-shadow:0 24px 60px rgba(0,0,0,.7);
 }
 
 .logo{
   display:flex;
   align-items:center;
   gap:16px;
+  margin-bottom:20px;
 }
 
 .logo-circle{
-  width:48px;
-  height:48px;
+  width:64px;
+  height:64px;
   border-radius:50%;
   background:linear-gradient(135deg,#4285f4,#34a853);
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:24px;
+  font-size:30px;
   font-weight:700;
 }
 
-.card{
-  background:#1c1c1c;
-  border-radius:16px;
-  padding:32px;
-  margin-bottom:24px;
-  border:1px solid #2a2a2a;
+h1{margin:0 0 6px;font-weight:500}
+.sub{color:#aaa;margin-bottom:18px}
+
+/* ---- STEP CONTAINERS ---- */
+.step{
+  display:none;
+  opacity:0;
+  transform:translateX(20px);
+  transition:opacity .3s ease, transform .3s ease;
 }
 
-.card-title{
-  font-size:20px;
-  font-weight:600;
-  margin:0 0 20px;
-}
-
-.profile-section{
-  display:flex;
-  align-items:center;
-  gap:24px;
-  margin-bottom:24px;
-}
-
-.profile-pic{
-  width:100px;
-  height:100px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#8ab4f8,#4285f4);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
-  font-weight:700;
-  overflow:hidden;
-  cursor:pointer;
-  transition:transform .2s;
-  position:relative;
-}
-
-.profile-pic:hover{
-  transform:scale(1.05);
-}
-
-.profile-pic:hover::after{
-  content:'Change';
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  font-weight:600;
-}
-
-.profile-pic img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.profile-info h2{
-  margin:0 0 8px;
-  font-size:24px;
-}
-
-.profile-info p{
-  margin:0;
-  color:#aaa;
-  font-size:14px;
-}
-
-.input-group{
-  margin-bottom:20px;
-}
-
-.label{
+.step.active{
   display:block;
-  font-size:14px;
-  color:#aaa;
-  margin-bottom:8px;
-  font-weight:500;
+  animation:fadeSlide .3s ease forwards;
 }
 
+@keyframes fadeSlide{
+  from{opacity:0;transform:translateX(20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+/* ---- INPUTS ---- */
 .input{
   width:100%;
-  padding:12px;
-  font-size:15px;
+  padding:13px;
+  font-size:16px;
   background:#121212;
   border:1px solid #333;
-  border-radius:8px;
+  border-radius:10px;
   color:#fff;
+  margin-bottom:16px;
   box-sizing:border-box;
-  transition:border-color .2s;
 }
 
 .input:focus{
@@ -144,278 +88,252 @@ html,body{
   border-color:#8ab4f8;
 }
 
-.input:disabled{
-  opacity:0.5;
-  cursor:not-allowed;
-}
-
+/* ---- BUTTONS ---- */
 .btn{
-  padding:12px 24px;
+  width:100%;
+  margin-top:14px;
+  background:#8ab4f8;
   border:none;
-  border-radius:20px;
-  font-size:15px;
+  border-radius:24px;
+  padding:14px;
+  font-size:16px;
   font-weight:600;
   cursor:pointer;
-  transition:all .2s;
-}
-
-.btn-primary{
-  background:#8ab4f8;
   color:#121212;
 }
 
-.btn-primary:hover{
+.btn:hover{
   background:#a8c7fa;
 }
 
-.btn-primary:disabled{
-  opacity:0.5;
+.btn:disabled{
+  opacity:0.6;
   cursor:not-allowed;
 }
 
-.btn-secondary{
-  background:#333;
-  color:#eaeaea;
+.link{
+  margin-top:12px;
+  text-align:center;
+  color:#8ab4f8;
+  cursor:pointer;
+  font-size:14px;
 }
 
-.btn-secondary:hover{
-  background:#444;
-}
-
-.btn-danger{
-  background:#f44336;
-  color:#fff;
-}
-
-.btn-danger:hover{
-  background:#e53935;
-}
-
-.btn-group{
-  display:flex;
-  gap:12px;
-  margin-top:20px;
+.link:hover{
+  text-decoration:underline;
 }
 
 .status{
-  margin-top:12px;
-  font-size:14px;
-  min-height:20px;
-}
-
-.status.success{
-  color:#81c784;
-}
-
-.status.error{
+  margin-top:14px;
+  min-height:18px;
   color:#ff8a80;
+  font-size:14px;
 }
 
-.danger-zone{
-  border-color:#f44336;
+/* ---- ACCOUNTS ---- */
+.account-list{
+  margin-bottom:20px;
 }
 
-.danger-zone .card-title{
-  color:#f44336;
+.account{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px;
+  border:1px solid #333;
+  border-radius:14px;
+  cursor:pointer;
+  margin-bottom:12px;
+  transition:background .2s ease, border-color .2s ease;
+  position:relative;
+}
+
+.account:hover{
+  background:#252525;
+  border-color:#444;
+}
+
+.account-avatar{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#8ab4f8,#4285f4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  font-weight:700;
+  flex-shrink:0;
+  overflow:hidden;
+}
+
+.account-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.account-info{
+  flex:1;
+}
+
+.account-name{
+  font-weight:600;
+  font-size:16px;
+  margin-bottom:2px;
+}
+
+.account-email{
+  font-size:14px;
+  color:#aaa;
+}
+
+.account-remove{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#333;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+
+.account:hover .account-remove{
+  opacity:1;
+}
+
+.account-remove:hover{
+  background:#444;
+}
+
+.divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:20px 0;
+  color:#666;
+  font-size:14px;
+}
+
+.divider::before,
+.divider::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:#333;
+}
+
+/* ---- PROFILE PIC UPLOAD ---- */
+.profile-pic-section{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.profile-pic-preview{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#8ab4f8,#4285f4);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  font-weight:700;
+  margin-bottom:12px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .2s ease;
+}
+
+.profile-pic-preview:hover{
+  transform:scale(1.05);
+}
+
+.profile-pic-preview img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.profile-pic-label{
+  color:#8ab4f8;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.profile-pic-label:hover{
+  text-decoration:underline;
 }
 
 #photoFile{
   display:none;
 }
-
-.modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  align-items:center;
-  justify-content:center;
-  z-index:1000;
-}
-
-.modal.active{
-  display:flex;
-}
-
-.modal-content{
-  background:#1c1c1c;
-  border-radius:16px;
-  padding:32px;
-  max-width:400px;
-  width:90%;
-  border:1px solid #2a2a2a;
-}
-
-.modal-title{
-  font-size:20px;
-  font-weight:600;
-  margin:0 0 16px;
-}
-
-.modal-text{
-  color:#aaa;
-  margin-bottom:24px;
-  line-height:1.5;
-}
-
-.loading{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  align-items:center;
-  justify-content:center;
-  z-index:2000;
-}
-
-.loading.active{
-  display:flex;
-}
-
-.spinner{
-  width:40px;
-  height:40px;
-  border:4px solid #333;
-  border-top-color:#8ab4f8;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
 </style>
 </head>
 
 <body>
-<div class="container">
-  <div class="header">
-    <div class="logo">
-      <div class="logo-circle">J</div>
-      <strong style="font-size:22px">Jxo Account</strong>
-    </div>
-  </div>
+<div class="center">
+<div class="card">
 
-  <!-- Profile Card -->
-  <div class="card">
-    <h3 class="card-title">Profile</h3>
-    <div class="profile-section">
-      <div class="profile-pic" id="profilePic" onclick="document.getElementById('photoFile').click()">
-        <span id="profileInitial">?</span>
-      </div>
-      <div class="profile-info">
-        <h2 id="displayNameText">Loading...</h2>
-        <p id="emailText">Loading...</p>
-      </div>
+<div class="logo">
+  <div class="logo-circle">J</div>
+  <strong style="font-size:28px">Jxo</strong>
+</div>
+
+<h1 id="title">Sign in</h1>
+<div class="sub" id="subtitle">Choose an account</div>
+
+<!-- ACCOUNT LIST -->
+<div id="accountList" class="account-list"></div>
+
+<!-- STEP 0 -->
+<div id="step-email" class="step">
+  <input id="email" class="input" placeholder="Email" type="email" autocomplete="email">
+</div>
+
+<!-- STEP 1 -->
+<div id="step-password" class="step">
+  <input id="password" class="input" type="password" placeholder="Password" autocomplete="current-password">
+</div>
+
+<!-- STEP 2 -->
+<div id="step-profile" class="step">
+  <div class="profile-pic-section">
+    <div class="profile-pic-preview" id="profilePicPreview" onclick="document.getElementById('photoFile').click()">
+      <span id="profileInitial">?</span>
     </div>
+    <label class="profile-pic-label" for="photoFile">Upload profile picture</label>
     <input type="file" id="photoFile" accept="image/*">
-    
-    <div class="input-group">
-      <label class="label">Display Name</label>
-      <input type="text" class="input" id="newDisplayName" placeholder="Your name">
-    </div>
-    
-    <div class="btn-group">
-      <button class="btn btn-primary" id="updateProfileBtn">Update Profile</button>
-    </div>
-    <div class="status" id="profileStatus"></div>
   </div>
-
-  <!-- Email Card -->
-  <div class="card">
-    <h3 class="card-title">Email Address</h3>
-    <div class="input-group">
-      <label class="label">Current Email</label>
-      <input type="email" class="input" id="currentEmail" disabled>
-    </div>
-    <div class="input-group">
-      <label class="label">New Email</label>
-      <input type="email" class="input" id="newEmail" placeholder="newemail@example.com">
-    </div>
-    <div class="input-group">
-      <label class="label">Confirm Password</label>
-      <input type="password" class="input" id="emailPassword" placeholder="Enter your password">
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-primary" id="updateEmailBtn">Update Email</button>
-    </div>
-    <div class="status" id="emailStatus"></div>
-  </div>
-
-  <!-- Password Card -->
-  <div class="card">
-    <h3 class="card-title">Password</h3>
-    <div class="input-group">
-      <label class="label">Current Password</label>
-      <input type="password" class="input" id="currentPassword" placeholder="Enter current password">
-    </div>
-    <div class="input-group">
-      <label class="label">New Password</label>
-      <input type="password" class="input" id="newPassword" placeholder="Enter new password">
-    </div>
-    <div class="input-group">
-      <label class="label">Confirm New Password</label>
-      <input type="password" class="input" id="confirmPassword" placeholder="Confirm new password">
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-primary" id="updatePasswordBtn">Change Password</button>
-    </div>
-    <div class="status" id="passwordStatus"></div>
-  </div>
-
-  <!-- Danger Zone -->
-  <div class="card danger-zone">
-    <h3 class="card-title">Danger Zone</h3>
-    <p style="color:#aaa;margin-bottom:20px;line-height:1.5">
-      Once you delete your account, there is no going back. This will permanently delete your profile, settings, and all associated data.
-    </p>
-    <button class="btn btn-danger" id="deleteAccountBtn">Delete Account</button>
-    <div class="status" id="deleteStatus"></div>
-  </div>
+  <input id="displayName" class="input" placeholder="Display name" autocomplete="name">
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal" id="deleteModal">
-  <div class="modal-content">
-    <h3 class="modal-title">Delete Account?</h3>
-    <p class="modal-text">
-      This action cannot be undone. All your data will be permanently deleted.
-    </p>
-    <div class="input-group">
-      <label class="label">Enter your password to confirm</label>
-      <input type="password" class="input" id="deletePassword" placeholder="Password">
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-danger" id="confirmDeleteBtn">Delete Forever</button>
-      <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
-    </div>
-    <div class="status" id="modalStatus"></div>
-  </div>
-</div>
+<button id="nextBtn" class="btn">Next</button>
+<div id="toggle" class="link">Use another account</div>
+<div id="status" class="status"></div>
 
-<!-- Loading Overlay -->
-<div class="loading" id="loading">
-  <div class="spinner"></div>
+</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import {
   getAuth,
-  onAuthStateChanged,
-  updateProfile,
-  updateEmail,
-  updatePassword,
-  deleteUser,
-  EmailAuthProvider,
-  reauthenticateWithCredential
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import {
   getFirestore,
   doc,
   setDoc,
-  getDoc,
-  deleteDoc
+  getDoc
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
 /* ---- FIREBASE ---- */
@@ -428,311 +346,461 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* ---- ELEMENTS ---- */
-const profilePic = document.getElementById("profilePic");
-const profileInitial = document.getElementById("profileInitial");
+const accountList = document.getElementById("accountList");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const displayName = document.getElementById("displayName");
 const photoFile = document.getElementById("photoFile");
-const displayNameText = document.getElementById("displayNameText");
-const emailText = document.getElementById("emailText");
-const newDisplayName = document.getElementById("newDisplayName");
-const currentEmail = document.getElementById("currentEmail");
-const newEmail = document.getElementById("newEmail");
-const emailPassword = document.getElementById("emailPassword");
-const currentPassword = document.getElementById("currentPassword");
-const newPassword = document.getElementById("newPassword");
-const confirmPassword = document.getElementById("confirmPassword");
-const deletePassword = document.getElementById("deletePassword");
+const profilePicPreview = document.getElementById("profilePicPreview");
+const profileInitial = document.getElementById("profileInitial");
+const nextBtn = document.getElementById("nextBtn");
+const toggle = document.getElementById("toggle");
+const title = document.getElementById("title");
+const subtitle = document.getElementById("subtitle");
+const status = document.getElementById("status");
+const warningBanner = document.getElementById("warningBanner");
+const infoBanner = document.getElementById("infoBanner");
 
-const updateProfileBtn = document.getElementById("updateProfileBtn");
-const updateEmailBtn = document.getElementById("updateEmailBtn");
-const updatePasswordBtn = document.getElementById("updatePasswordBtn");
-const deleteAccountBtn = document.getElementById("deleteAccountBtn");
-const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+const steps = {
+  email: document.getElementById("step-email"),
+  password: document.getElementById("step-password"),
+  profile: document.getElementById("step-profile")
+};
 
-const profileStatus = document.getElementById("profileStatus");
-const emailStatus = document.getElementById("emailStatus");
-const passwordStatus = document.getElementById("passwordStatus");
-const deleteStatus = document.getElementById("deleteStatus");
-const modalStatus = document.getElementById("modalStatus");
-
-const deleteModal = document.getElementById("deleteModal");
-const loading = document.getElementById("loading");
-
-let currentUser = null;
+/* ---- STATE ---- */
+let mode = "signin";
+let step = "email";
 let uploadedPhotoBase64 = null;
+let isTrustedSite = false;
+let trustedSitesData = null;
 
-/* ---- AUTH CHECK ---- */
-onAuthStateChanged(auth, async (user) => {
-  if(!user){
-    // Redirect to login with return URL
-    window.location.href = "login.html?redirect=" + encodeURIComponent(window.location.href);
-    return;
+/* ---- LOCAL STORAGE ---- */
+function getSavedAccounts(){
+  const saved = localStorage.getItem("jxoAccounts");
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveAccount(user, photoURL, saveSession = false){
+  const accounts = getSavedAccounts();
+  const existing = accounts.findIndex(a => a.email === user.email);
+  
+  const account = {
+    email: user.email,
+    displayName: user.displayName || user.email,
+    photoURL: photoURL || null,
+    uid: user.uid,
+    lastSignIn: saveSession ? Date.now() : (existing >= 0 ? accounts[existing].lastSignIn : null)
+  };
+
+  if(existing >= 0){
+    accounts[existing] = account;
+  } else {
+    accounts.push(account);
   }
-  
-  currentUser = user;
-  await loadUserData();
-});
 
-/* ---- LOAD USER DATA ---- */
-async function loadUserData(){
-  displayNameText.textContent = currentUser.displayName || "No name set";
-  emailText.textContent = currentUser.email;
-  currentEmail.value = currentUser.email;
-  newDisplayName.value = currentUser.displayName || "";
-  
-  // Load profile pic from Firestore
-  try{
-    const docSnap = await getDoc(doc(db, "users", currentUser.uid));
-    if(docSnap.exists() && docSnap.data().photoURL){
-      const photoURL = docSnap.data().photoURL;
-      profilePic.innerHTML = `<img src="${photoURL}" alt="Profile">`;
-    } else {
-      const initial = currentUser.displayName ? currentUser.displayName[0].toUpperCase() : currentUser.email[0].toUpperCase();
-      profileInitial.textContent = initial;
+  localStorage.setItem("jxoAccounts", JSON.stringify(accounts));
+}
+
+function removeAccount(email){
+  const accounts = getSavedAccounts();
+  const filtered = accounts.filter(a => a.email !== email);
+  localStorage.setItem("jxoAccounts", JSON.stringify(filtered));
+  renderAccounts();
+}
+
+function isSessionValid(account){
+  if(!account.lastSignIn) return false;
+  const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+  return (Date.now() - account.lastSignIn) < thirtyDays;
+}
+
+/* ---- TRUSTED SITES CHECK ---- */
+async function checkTrustedSite(){
+  try {
+    const response = await fetch('https://jxoj.github.io/Jxo/ts.json');
+    trustedSitesData = await response.json();
+    
+    const currentDomain = window.location.hostname;
+    isTrustedSite = trustedSitesData.trustedSites.some(site => 
+      currentDomain === site || currentDomain.endsWith('.' + site)
+    );
+    
+    // Check if first time user
+    const hasSeenWarning = localStorage.getItem('jxoFirstTimeWarning');
+    
+    if (!hasSeenWarning) {
+      // Show first-time warning to everyone
+      infoBanner.textContent = trustedSitesData.firstTimeMessage;
+      infoBanner.style.display = 'block';
+      localStorage.setItem('jxoFirstTimeWarning', 'true');
     }
-  } catch(e){
-    console.error("Failed to load photo:", e);
+    
+    if (!isTrustedSite) {
+      // Show warning for untrusted sites
+      warningBanner.textContent = trustedSitesData.warningMessage;
+      warningBanner.style.display = 'block';
+    }
+    
+    return isTrustedSite;
+  } catch (error) {
+    console.error('Failed to load trusted sites:', error);
+    // Fail-safe: show warning if can't verify
+    warningBanner.textContent = '⚠️ Could not verify site security. Proceed with caution.';
+    warningBanner.style.display = 'block';
+    return false;
   }
 }
 
+function renderAccounts(){
+  const accounts = getSavedAccounts();
+  
+  if(accounts.length === 0){
+    accountList.innerHTML = "";
+    accountList.style.display = "none";
+    title.textContent = mode === "signin" ? "Sign in" : "Create account";
+    subtitle.textContent = mode === "signin" ? "Use your Jxo Account" : "Create your Jxo Account";
+    showStep("email");
+    step = "email";
+    toggle.textContent = "Don't have an account? Create one!";
+    nextBtn.style.display = "block";
+    return;
+  }
+
+  accountList.style.display = "block";
+  title.textContent = "Choose an account";
+  subtitle.textContent = "to continue to Jxo";
+  
+  accountList.innerHTML = accounts.map(acc => {
+    const initial = acc.displayName ? acc.displayName[0].toUpperCase() : acc.email[0].toUpperCase();
+    const avatarContent = acc.photoURL 
+      ? `<img src="${acc.photoURL}" alt="${acc.displayName}">`
+      : initial;
+
+    return `
+      <div class="account" data-email="${acc.email}">
+        <div class="account-avatar">${avatarContent}</div>
+        <div class="account-info">
+          <div class="account-name">${acc.displayName}</div>
+          <div class="account-email">${acc.email}</div>
+        </div>
+        <div class="account-remove" data-remove="${acc.email}">×</div>
+      </div>
+    `;
+  }).join('');
+
+  // Hide steps
+  Object.values(steps).forEach(s=>s.classList.remove("active"));
+  nextBtn.style.display = "none";
+  toggle.textContent = "Use another account";
+}
+
+/* ---- HELPERS ---- */
+function showStep(name){
+  Object.values(steps).forEach(s=>s.classList.remove("active"));
+  steps[name].classList.add("active");
+  nextBtn.style.display = "block";
+}
+
 /* ---- PHOTO UPLOAD ---- */
-photoFile.addEventListener("change", (e) => {
+photoFile.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if(!file) return;
 
+  // Resize and convert to base64
   const reader = new FileReader();
   reader.onload = (evt) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const size = 200;
+      const size = 200; // Resize to 200x200 to save space
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
       
+      // Draw image centered and cropped
       const scale = Math.max(size / img.width, size / img.height);
       const x = (size / 2) - (img.width / 2) * scale;
       const y = (size / 2) - (img.height / 2) * scale;
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
       
       uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8);
-      profilePic.innerHTML = `<img src="${uploadedPhotoBase64}" alt="Profile">`;
+      profilePicPreview.innerHTML = `<img src="${uploadedPhotoBase64}" alt="Profile">`;
     };
     img.src = evt.target.result;
   };
   reader.readAsDataURL(file);
 });
 
-/* ---- UPDATE PROFILE ---- */
-updateProfileBtn.onclick = async () => {
-  profileStatus.textContent = "";
-  profileStatus.className = "status";
-  
-  if(!newDisplayName.value.trim()){
-    profileStatus.textContent = "Display name cannot be empty";
-    profileStatus.classList.add("error");
-    return;
-  }
-  
-  loading.classList.add("active");
-  updateProfileBtn.disabled = true;
+/* ---- FIRESTORE PHOTO SAVE ---- */
+async function savePhotoToFirestore(userId, base64Photo){
+  if(!base64Photo) return null;
   
   try{
-    // Update display name in Firebase Auth
-    await updateProfile(currentUser, {
-      displayName: newDisplayName.value.trim()
+    await setDoc(doc(db, "users", userId), {
+      photoURL: base64Photo
+    }, { merge: true });
+    return base64Photo;
+  } catch(e){
+    console.error("Failed to save photo to Firestore:", e);
+    return null;
+  }
+}
+
+async function getPhotoFromFirestore(userId){
+  try{
+    const docSnap = await getDoc(doc(db, "users", userId));
+    if(docSnap.exists() && docSnap.data().photoURL){
+      return docSnap.data().photoURL;
+    }
+  } catch(e){
+    console.error("Failed to get photo from Firestore:", e);
+  }
+  return null;
+}
+
+/* ---- FLOW ---- */
+function proceed(){
+  status.textContent="";
+  status.style.color="#ff8a80";
+
+  if(step==="email"){
+    if(!email.value) return status.textContent="Enter email";
+    step="password";
+    showStep("password");
+    title.textContent="Enter password";
+    subtitle.textContent = "for " + email.value;
+    requestAnimationFrame(() => {
+      password.focus();
     });
+    return;
+  }
+
+  if(step==="password"){
+    if(!password.value) return status.textContent="Enter password";
+
+    if(mode==="signin"){
+      nextBtn.disabled = true;
+      nextBtn.textContent = "Signing in...";
+      signInWithEmailAndPassword(auth,email.value,password.value)
+        .then(async cred=>{
+          const photoURL = await getPhotoFromFirestore(cred.user.uid);
+          saveAccount(cred.user, photoURL, true);
+          handleSuccess(cred.user);
+        })
+        .catch(e=>{
+          console.error(e);
+          status.textContent=e.message;
+          nextBtn.disabled = false;
+          nextBtn.textContent = "Next";
+        });
+      return;
+    }
+
+    step="profile";
+    showStep("profile");
+    title.textContent="Set up your profile";
+    subtitle.textContent="How you'll appear on Jxo";
+    nextBtn.textContent="Create account";
     
-    // Save to Firestore (for profile data + photo)
-    const userData = {
-      displayName: newDisplayName.value.trim()
-    };
-    
-    if(uploadedPhotoBase64){
-      userData.photoURL = uploadedPhotoBase64;
+    // Set initial in preview
+    if(email.value){
+      profileInitial.textContent = email.value[0].toUpperCase();
     }
     
-    await setDoc(doc(db, "users", currentUser.uid), userData, { merge: true });
-    
-    // Update localStorage accounts
-    updateLocalStorage(userData);
-    
-    profileStatus.textContent = "✓ Profile updated successfully!";
-    profileStatus.classList.add("success");
-    displayNameText.textContent = newDisplayName.value.trim();
-    uploadedPhotoBase64 = null;
-  } catch(e){
-    console.error(e);
-    profileStatus.textContent = e.message;
-    profileStatus.classList.add("error");
-  } finally {
-    loading.classList.remove("active");
-    updateProfileBtn.disabled = false;
+    requestAnimationFrame(() => {
+      displayName.focus();
+    });
+    return;
   }
-};
 
-/* ---- UPDATE EMAIL ---- */
-updateEmailBtn.onclick = async () => {
-  emailStatus.textContent = "";
-  emailStatus.className = "status";
-  
-  if(!newEmail.value || !emailPassword.value){
-    emailStatus.textContent = "Please fill in all fields";
-    emailStatus.classList.add("error");
-    return;
-  }
-  
-  if(newEmail.value === currentUser.email){
-    emailStatus.textContent = "New email must be different";
-    emailStatus.classList.add("error");
-    return;
-  }
-  
-  loading.classList.add("active");
-  updateEmailBtn.disabled = true;
-  
-  try{
-    // Reauthenticate first
-    const credential = EmailAuthProvider.credential(currentUser.email, emailPassword.value);
-    await reauthenticateWithCredential(currentUser, credential);
+  if(step==="profile"){
+    nextBtn.disabled = true;
+    nextBtn.textContent = "Creating...";
     
-    // Update email
-    await updateEmail(currentUser, newEmail.value);
-    
-    // Update localStorage
-    updateLocalStorage({ email: newEmail.value });
-    
-    emailStatus.textContent = "✓ Email updated successfully!";
-    emailStatus.classList.add("success");
-    currentEmail.value = newEmail.value;
-    emailText.textContent = newEmail.value;
-    newEmail.value = "";
-    emailPassword.value = "";
-  } catch(e){
-    console.error(e);
-    emailStatus.textContent = e.message;
-    emailStatus.classList.add("error");
-  } finally {
-    loading.classList.remove("active");
-    updateEmailBtn.disabled = false;
-  }
-};
+    createUserWithEmailAndPassword(auth,email.value,password.value)
+      .then(async cred=>{
+        // Save photo to Firestore
+        let photoURL = null;
+        if(uploadedPhotoBase64){
+          photoURL = await savePhotoToFirestore(cred.user.uid, uploadedPhotoBase64);
+        }
 
-/* ---- UPDATE PASSWORD ---- */
-updatePasswordBtn.onclick = async () => {
-  passwordStatus.textContent = "";
-  passwordStatus.className = "status";
-  
-  if(!currentPassword.value || !newPassword.value || !confirmPassword.value){
-    passwordStatus.textContent = "Please fill in all fields";
-    passwordStatus.classList.add("error");
-    return;
+        return updateProfile(cred.user,{
+          displayName:displayName.value || email.value.split('@')[0]
+        }).then(()=>({ user: cred.user, photoURL }));
+      })
+      .then(({user, photoURL})=>{
+        saveAccount(user, photoURL, true);
+        handleSuccess(user);
+      })
+      .catch(e=>{
+        console.error(e);
+        status.textContent=e.message;
+        nextBtn.disabled = false;
+        nextBtn.textContent = "Create account";
+      });
   }
-  
-  if(newPassword.value !== confirmPassword.value){
-    passwordStatus.textContent = "New passwords don't match";
-    passwordStatus.classList.add("error");
-    return;
-  }
-  
-  if(newPassword.value.length < 6){
-    passwordStatus.textContent = "Password must be at least 6 characters";
-    passwordStatus.classList.add("error");
-    return;
-  }
-  
-  loading.classList.add("active");
-  updatePasswordBtn.disabled = true;
-  
-  try{
-    // Reauthenticate first
-    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword.value);
-    await reauthenticateWithCredential(currentUser, credential);
-    
-    // Update password
-    await updatePassword(currentUser, newPassword.value);
-    
-    passwordStatus.textContent = "✓ Password changed successfully!";
-    passwordStatus.classList.add("success");
-    currentPassword.value = "";
-    newPassword.value = "";
-    confirmPassword.value = "";
-  } catch(e){
-    console.error(e);
-    passwordStatus.textContent = e.message;
-    passwordStatus.classList.add("error");
-  } finally {
-    loading.classList.remove("active");
-    updatePasswordBtn.disabled = false;
-  }
-};
+}
 
-/* ---- DELETE ACCOUNT ---- */
-deleteAccountBtn.onclick = () => {
-  deleteModal.classList.add("active");
-  modalStatus.textContent = "";
-  deletePassword.value = "";
-};
-
-cancelDeleteBtn.onclick = () => {
-  deleteModal.classList.remove("active");
-};
-
-confirmDeleteBtn.onclick = async () => {
-  modalStatus.textContent = "";
-  modalStatus.className = "status";
-  
-  if(!deletePassword.value){
-    modalStatus.textContent = "Please enter your password";
-    modalStatus.classList.add("error");
-    return;
-  }
-  
-  loading.classList.add("active");
-  confirmDeleteBtn.disabled = true;
-  
-  try{
-    // Reauthenticate
-    const credential = EmailAuthProvider.credential(currentUser.email, deletePassword.value);
-    await reauthenticateWithCredential(currentUser, credential);
-    
-    // Delete Firestore data (profile + all app data)
-    try{
-      await deleteDoc(doc(db, "users", currentUser.uid));
-    } catch(e){
-      console.error("Failed to delete Firestore data:", e);
+function handleSuccess(user){
+  user.getIdToken().then(token=>{
+    const r=new URLSearchParams(location.search).get("redirect");
+    if(r) {
+      location.href=r+"#token="+token;
+    } else {
+      status.textContent = "✓ Signed in successfully!";
+      status.style.color = "#81c784";
+      setTimeout(() => {
+        renderAccounts();
+      }, 1500);
     }
-    
-    // Remove from localStorage
-    const accounts = JSON.parse(localStorage.getItem("jxoAccounts") || "[]");
-    const filtered = accounts.filter(a => a.email !== currentUser.email);
-    localStorage.setItem("jxoAccounts", JSON.stringify(filtered));
-    
-    // Delete user
-    await deleteUser(currentUser);
-    
-    // Redirect to login
-    window.location.href = "login.html";
-  } catch(e){
-    console.error(e);
-    modalStatus.textContent = e.message;
-    modalStatus.classList.add("error");
-    confirmDeleteBtn.disabled = false;
-    loading.classList.remove("active");
+  });
+}
+
+/* ---- TOGGLE ---- */
+toggle.onclick=()=>{
+  const accounts = getSavedAccounts();
+  
+  // If we're on account list or password step, go to sign in page
+  if(accounts.length > 0 && (step === "email" || step === "password")){
+    accountList.innerHTML = "";
+    mode = "signin";
+    step = "email";
+    showStep("email");
+    title.textContent = "Sign in";
+    subtitle.textContent = "Use your Jxo Account";
+    nextBtn.textContent = "Next";
+    nextBtn.style.display = "block";
+    toggle.textContent = "Don't have an account? Create one!";
+    email.value = "";
+    password.value = "";
+    status.textContent = "";
+    requestAnimationFrame(() => {
+      email.focus();
+    });
+    return;
   }
+
+  mode = mode==="signin" ? "create" : "signin";
+  step = "email";
+  showStep("email");
+  title.textContent = mode==="signin" ? "Sign in" : "Create account";
+  subtitle.textContent = mode==="signin" ? "Use your Jxo Account" : "Create your Jxo Account";
+  nextBtn.textContent = "Next";
+  nextBtn.style.display = "block";
+  toggle.textContent = mode==="signin" ? "Don't have an account? Create one!" : "Already have an account? Sign in";
+  email.value = "";
+  password.value = "";
+  displayName.value = "";
+  photoFile.value = "";
+  uploadedPhotoBase64 = null;
+  profilePicPreview.innerHTML = '<span id="profileInitial">?</span>';
+  status.textContent = "";
+  accountList.innerHTML = "";
+  requestAnimationFrame(() => {
+    email.focus();
+  });
 };
 
-/* ---- UPDATE LOCALSTORAGE ---- */
-function updateLocalStorage(changes){
-  const accounts = JSON.parse(localStorage.getItem("jxoAccounts") || "[]");
-  const index = accounts.findIndex(a => a.uid === currentUser.uid);
-  
-  if(index >= 0){
-    if(changes.displayName) accounts[index].displayName = changes.displayName;
-    if(changes.email) accounts[index].email = changes.email;
-    if(changes.photoURL) accounts[index].photoURL = changes.photoURL;
-    localStorage.setItem("jxoAccounts", JSON.stringify(accounts));
+/* ---- ACCOUNT SELECTION ---- */
+accountList.addEventListener("click", async (e) => {
+  const accountDiv = e.target.closest(".account");
+  if(!accountDiv) return;
+
+  const removeBtn = e.target.closest(".account-remove");
+  if(removeBtn){
+    e.stopPropagation();
+    const emailToRemove = removeBtn.dataset.remove;
+    removeAccount(emailToRemove);
+    return;
   }
+
+  const selectedEmail = accountDiv.dataset.email;
+  const accounts = getSavedAccounts();
+  const account = accounts.find(a => a.email === selectedEmail);
+  
+  if(account){
+    // Check if session is still valid (within 30 days)
+    if(isSessionValid(account)){
+      // Show signing in status
+      title.textContent = "Signing in...";
+      subtitle.textContent = account.displayName;
+      status.textContent = "Session still valid! Redirecting...";
+      status.style.color = "#81c784";
+      
+      // Check if user is already signed in with Firebase
+      auth.onAuthStateChanged(async (user) => {
+        if(user && user.email === account.email){
+          // User is already signed in
+          const photoURL = await getPhotoFromFirestore(user.uid);
+          saveAccount(user, photoURL, true);
+          handleSuccess(user);
+        } else {
+          // Need to sign in again (prompt for password)
+          email.value = account.email;
+          mode = "signin";
+          step = "password";
+          showStep("password");
+          title.textContent = "Welcome back";
+          subtitle.textContent = account.displayName;
+          nextBtn.style.display = "block";
+          nextBtn.textContent = "Next";
+          toggle.textContent = "Use another account";
+          status.textContent = "";
+          requestAnimationFrame(() => {
+            password.focus();
+          });
+        }
+      });
+    } else {
+      // Session expired, require password
+      email.value = account.email;
+      mode = "signin";
+      step = "password";
+      showStep("password");
+      title.textContent = "Welcome back";
+      subtitle.textContent = account.displayName;
+      nextBtn.style.display = "block";
+      nextBtn.textContent = "Next";
+      toggle.textContent = "Use another account";
+      requestAnimationFrame(() => {
+        password.focus();
+      });
+    }
+  }
+});
+
+/* ---- ENTER KEY ---- */
+email.addEventListener("keydown", e => {
+  if(e.key === "Enter") {
+    e.preventDefault();
+    proceed();
+  }
+});
+
+password.addEventListener("keydown", e => {
+  if(e.key === "Enter") {
+    e.preventDefault();
+    proceed();
+  }
+});
+
+displayName.addEventListener("keydown", e => {
+  if(e.key === "Enter") {
+    e.preventDefault();
+    proceed();
+  }
+});
+
+nextBtn.onclick = proceed;
+
+// Check trusted sites on load
+checkTrustedSite();
+
+// Initial render
+renderAccounts();
+if(getSavedAccounts().length === 0){
+  email.focus();
 }
 </script>
 

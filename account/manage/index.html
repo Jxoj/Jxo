@@ -398,8 +398,35 @@ html,body{
   <div class="spinner"></div>
 </div>
 
-<script src="https://jxoj.github.io/Jxo/sdk.js"></script>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+/* ---- FIREBASE ---- */
+const app = initializeApp({
+  apiKey:"AIzaSyDUFBrPl8YJwkmqwibq730VX2mtCkxaMeM",
+  authDomain:"jxoaccount.firebaseapp.com",
+  projectId:"jxoaccount"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 /* ---- ELEMENTS ---- */
 const profilePic = document.getElementById("profilePic");
 const profileInitial = document.getElementById("profileInitial");
@@ -431,38 +458,40 @@ const modalStatus = document.getElementById("modalStatus");
 const deleteModal = document.getElementById("deleteModal");
 const loading = document.getElementById("loading");
 
+let currentUser = null;
 let uploadedPhotoBase64 = null;
 
-/* ---- INITIALIZE JXO SDK ---- */
-Jxo.init().then(async () => {
-  const user = Jxo.getUser();
+/* ---- AUTH CHECK ---- */
+onAuthStateChanged(auth, async (user) => {
   if(!user){
-    Jxo.login();
+    // Redirect to login with return URL
+    window.location.href = "https://jxoj.github.io/Jxo/account?redirect=" + encodeURIComponent(window.location.href);
     return;
   }
   
+  currentUser = user;
   await loadUserData();
-}).catch(err => {
-  console.error("Jxo initialization failed:", err);
-  Jxo.login();
 });
 
 /* ---- LOAD USER DATA ---- */
 async function loadUserData(){
-  const user = Jxo.getUser();
-  const userData = await Jxo.getUserData();
+  displayNameText.textContent = currentUser.displayName || "No name set";
+  emailText.textContent = currentUser.email;
+  currentEmail.value = currentUser.email;
+  newDisplayName.value = currentUser.displayName || "";
   
-  displayNameText.textContent = userData.displayName || user.displayName || "No name set";
-  emailText.textContent = user.email;
-  currentEmail.value = user.email;
-  newDisplayName.value = userData.displayName || user.displayName || "";
-  
-  // Load profile pic
-  if(userData.photoURL){
-    profilePic.innerHTML = `<img src="${userData.photoURL}" alt="Profile">`;
-  } else {
-    const initial = (userData.displayName || user.displayName || user.email)[0].toUpperCase();
-    profileInitial.textContent = initial;
+  // Load profile pic from Firestore
+  try{
+    const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+    if(docSnap.exists() && docSnap.data().photoURL){
+      const photoURL = docSnap.data().photoURL;
+      profilePic.innerHTML = `<img src="${photoURL}" alt="Profile">`;
+    } else {
+      const initial = currentUser.displayName ? currentUser.displayName[0].toUpperCase() : currentUser.email[0].toUpperCase();
+      profileInitial.textContent = initial;
+    }
+  } catch(e){
+    console.error("Failed to load photo:", e);
   }
 }
 
@@ -509,15 +538,24 @@ updateProfileBtn.onclick = async () => {
   updateProfileBtn.disabled = true;
   
   try{
-    const updateData = {
+    // Update display name in Firebase Auth
+    await updateProfile(currentUser, {
+      displayName: newDisplayName.value.trim()
+    });
+    
+    // Save to Firestore (for profile data + photo)
+    const userData = {
       displayName: newDisplayName.value.trim()
     };
     
     if(uploadedPhotoBase64){
-      updateData.photoURL = uploadedPhotoBase64;
+      userData.photoURL = uploadedPhotoBase64;
     }
     
-    await Jxo.updateUserData(updateData);
+    await setDoc(doc(db, "users", currentUser.uid), userData, { merge: true });
+    
+    // Update localStorage accounts
+    updateLocalStorage(userData);
     
     profileStatus.textContent = "✓ Profile updated successfully!";
     profileStatus.classList.add("success");
@@ -538,15 +576,13 @@ updateEmailBtn.onclick = async () => {
   emailStatus.textContent = "";
   emailStatus.className = "status";
   
-  const user = Jxo.getUser();
-  
   if(!newEmail.value || !emailPassword.value){
     emailStatus.textContent = "Please fill in all fields";
     emailStatus.classList.add("error");
     return;
   }
   
-  if(newEmail.value === user.email){
+  if(newEmail.value === currentUser.email){
     emailStatus.textContent = "New email must be different";
     emailStatus.classList.add("error");
     return;
@@ -556,7 +592,15 @@ updateEmailBtn.onclick = async () => {
   updateEmailBtn.disabled = true;
   
   try{
-    await Jxo.updateEmail(newEmail.value, emailPassword.value);
+    // Reauthenticate first
+    const credential = EmailAuthProvider.credential(currentUser.email, emailPassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    
+    // Update email
+    await updateEmail(currentUser, newEmail.value);
+    
+    // Update localStorage
+    updateLocalStorage({ email: newEmail.value });
     
     emailStatus.textContent = "✓ Email updated successfully!";
     emailStatus.classList.add("success");
@@ -601,7 +645,12 @@ updatePasswordBtn.onclick = async () => {
   updatePasswordBtn.disabled = true;
   
   try{
-    await Jxo.updatePassword(newPassword.value, currentPassword.value);
+    // Reauthenticate first
+    const credential = EmailAuthProvider.credential(currentUser.email, currentPassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    
+    // Update password
+    await updatePassword(currentUser, newPassword.value);
     
     passwordStatus.textContent = "✓ Password changed successfully!";
     passwordStatus.classList.add("success");
@@ -643,8 +692,27 @@ confirmDeleteBtn.onclick = async () => {
   confirmDeleteBtn.disabled = true;
   
   try{
-    await Jxo.deleteAccount(deletePassword.value);
-    window.location.href = "login.html";
+    // Reauthenticate
+    const credential = EmailAuthProvider.credential(currentUser.email, deletePassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    
+    // Delete Firestore data (profile + all app data)
+    try{
+      await deleteDoc(doc(db, "users", currentUser.uid));
+    } catch(e){
+      console.error("Failed to delete Firestore data:", e);
+    }
+    
+    // Remove from localStorage
+    const accounts = JSON.parse(localStorage.getItem("jxoAccounts") || "[]");
+    const filtered = accounts.filter(a => a.email !== currentUser.email);
+    localStorage.setItem("jxoAccounts", JSON.stringify(filtered));
+    
+    // Delete user
+    await deleteUser(currentUser);
+    
+    // Redirect to login
+    window.location.href = "https://jxoj.github.io/Jxo/account";
   } catch(e){
     console.error(e);
     modalStatus.textContent = e.message;
@@ -653,6 +721,19 @@ confirmDeleteBtn.onclick = async () => {
     loading.classList.remove("active");
   }
 };
+
+/* ---- UPDATE LOCALSTORAGE ---- */
+function updateLocalStorage(changes){
+  const accounts = JSON.parse(localStorage.getItem("jxoAccounts") || "[]");
+  const index = accounts.findIndex(a => a.uid === currentUser.uid);
+  
+  if(index >= 0){
+    if(changes.displayName) accounts[index].displayName = changes.displayName;
+    if(changes.email) accounts[index].email = changes.email;
+    if(changes.photoURL) accounts[index].photoURL = changes.photoURL;
+    localStorage.setItem("jxoAccounts", JSON.stringify(accounts));
+  }
+}
 </script>
 
 </body>
