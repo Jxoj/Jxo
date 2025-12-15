@@ -609,7 +609,7 @@
     async function initializeApp() {
       try {
         console.log('Initializing Jxo SDK...');
-        await Jxo.init(APP_ID);
+        await Jxo.init(APP_ID, { rememberUser: true });
         currentUser = Jxo.getUser();
         console.log('Current user:', currentUser);
         
