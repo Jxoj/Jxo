@@ -1,0 +1,8 @@
+{
+  "bans": [
+    { "word": "corey", "reason": "Use during class." },
+    { "word": "aengus", "reason": "Use during class." },
+    { "word": "murphy", "reason": "Use during class." },
+    { "word": "wishart", "reason": "Use during class." }
+  ]
+}

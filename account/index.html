@@ -274,6 +274,73 @@ h1{margin:0 0 6px;font-weight:500}
 #photoFile{
   display:none;
 }
+
+/* ---- BAN SCREEN ---- */
+#banScreen{
+  display:none;
+  animation:fadeSlide .3s ease forwards;
+}
+
+.ban-icon{
+  font-size:56px;
+  text-align:center;
+  margin-bottom:16px;
+}
+
+.ban-title{
+  font-size:22px;
+  font-weight:700;
+  color:#ff8a80;
+  text-align:center;
+  margin-bottom:8px;
+}
+
+.ban-subtitle{
+  color:#aaa;
+  text-align:center;
+  font-size:14px;
+  margin-bottom:24px;
+}
+
+.ban-details{
+  background:#121212;
+  border:1px solid #3a1a1a;
+  border-radius:12px;
+  padding:18px 20px;
+}
+
+.ban-row{
+  display:flex;
+  gap:12px;
+  margin-bottom:12px;
+  font-size:14px;
+}
+
+.ban-row:last-child{
+  margin-bottom:0;
+}
+
+.ban-label{
+  color:#888;
+  min-width:90px;
+  flex-shrink:0;
+}
+
+.ban-value{
+  color:#eaeaea;
+  word-break:break-all;
+}
+
+.ban-word-chip{
+  display:inline-block;
+  background:#3a1a1a;
+  border:1px solid #ff8a80;
+  color:#ff8a80;
+  border-radius:20px;
+  padding:2px 10px;
+  font-size:12px;
+  margin:2px 2px 2px 0;
+}
 </style>
 </head>
 
@@ -289,34 +356,59 @@ h1{margin:0 0 6px;font-weight:500}
 <h1 id="title">Sign in</h1>
 <div class="sub" id="subtitle">Choose an account</div>
 
-<!-- ACCOUNT LIST -->
-<div id="accountList" class="account-list"></div>
-
-<!-- STEP 0 -->
-<div id="step-email" class="step">
-  <input id="email" class="input" placeholder="Email" type="email" autocomplete="email">
-</div>
-
-<!-- STEP 1 -->
-<div id="step-password" class="step">
-  <input id="password" class="input" type="password" placeholder="Password" autocomplete="current-password">
-</div>
-
-<!-- STEP 2 -->
-<div id="step-profile" class="step">
-  <div class="profile-pic-section">
-    <div class="profile-pic-preview" id="profilePicPreview" onclick="document.getElementById('photoFile').click()">
-      <span id="profileInitial">?</span>
+<!-- BAN SCREEN -->
+<div id="banScreen">
+  <div class="ban-icon">🚫</div>
+  <div class="ban-title">Access Denied</div>
+  <div class="ban-subtitle">This email address is not permitted to access Jxo.</div>
+  <div class="ban-details">
+    <div class="ban-row">
+      <span class="ban-label">Email</span>
+      <span class="ban-value" id="banEmail">—</span>
     </div>
-    <label class="profile-pic-label" for="photoFile">Upload profile picture</label>
-    <input type="file" id="photoFile" accept="image/*">
+    <div class="ban-row">
+      <span class="ban-label">Reason</span>
+      <span class="ban-value" id="banReason">—</span>
+    </div>
+    <div class="ban-row">
+      <span class="ban-label">Matched</span>
+      <span class="ban-value" id="banWords">—</span>
+    </div>
   </div>
-  <input id="displayName" class="input" placeholder="Display name" autocomplete="name">
+  <button class="btn" onclick="dismissBan()" style="margin-top:20px;background:#333;color:#eaeaea">← Go back</button>
 </div>
 
-<button id="nextBtn" class="btn">Next</button>
-<div id="toggle" class="link">Use another account</div>
-<div id="status" class="status"></div>
+<!-- MAIN CONTENT -->
+<div id="mainContent">
+  <!-- ACCOUNT LIST -->
+  <div id="accountList" class="account-list"></div>
+
+  <!-- STEP 0 -->
+  <div id="step-email" class="step">
+    <input id="email" class="input" placeholder="Email" type="email" autocomplete="email">
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="step-password" class="step">
+    <input id="password" class="input" type="password" placeholder="Password" autocomplete="current-password">
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step-profile" class="step">
+    <div class="profile-pic-section">
+      <div class="profile-pic-preview" id="profilePicPreview" onclick="document.getElementById('photoFile').click()">
+        <span id="profileInitial">?</span>
+      </div>
+      <label class="profile-pic-label" for="photoFile">Upload profile picture</label>
+      <input type="file" id="photoFile" accept="image/*">
+    </div>
+    <input id="displayName" class="input" placeholder="Display name" autocomplete="name">
+  </div>
+
+  <button id="nextBtn" class="btn">Next</button>
+  <div id="toggle" class="link">Use another account</div>
+  <div id="status" class="status"></div>
+</div>
 
 </div>
 </div>
@@ -358,8 +450,8 @@ const toggle = document.getElementById("toggle");
 const title = document.getElementById("title");
 const subtitle = document.getElementById("subtitle");
 const status = document.getElementById("status");
-const warningBanner = document.getElementById("warningBanner");
-const infoBanner = document.getElementById("infoBanner");
+const banScreen = document.getElementById("banScreen");
+const mainContent = document.getElementById("mainContent");
 
 const steps = {
   email: document.getElementById("step-email"),
@@ -373,6 +465,81 @@ let step = "email";
 let uploadedPhotoBase64 = null;
 let isTrustedSite = false;
 let trustedSitesData = null;
+let bansData = null; // loaded ban list
+
+/* ---- BAN SYSTEM ---- */
+async function loadBans(){
+  try {
+    const res = await fetch('https://jxoj.github.io/Jxo/account/bans.json');
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    bansData = await res.json();
+  } catch(e) {
+    console.warn("Could not load bans list:", e);
+    bansData = null;
+  }
+}
+
+/**
+ * Check if an email matches any banned word/name.
+ * Expected bans.json format:
+ * {
+ *   "bans": [
+ *     { "word": "badword", "reason": "Hate speech" },
+ *     ...
+ *   ]
+ * }
+ * Returns { banned: true, reason, matchedWords } or { banned: false }
+ */
+function checkEmailBanned(emailValue){
+  if(!bansData || !Array.isArray(bansData.bans)) return { banned: false };
+
+  const lowerEmail = emailValue.toLowerCase();
+  const matched = [];
+
+  for(const entry of bansData.bans){
+    const word = (entry.word || entry.name || "").toLowerCase().trim();
+    if(!word) continue;
+    if(lowerEmail.includes(word)){
+      matched.push({ word: entry.word || entry.name, reason: entry.reason || "Banned content" });
+    }
+  }
+
+  if(matched.length === 0) return { banned: false };
+
+  // Collect unique reasons and words
+  const reasons = [...new Set(matched.map(m => m.reason))].join("; ");
+  const words = matched.map(m => m.word);
+  return { banned: true, reason: reasons, matchedWords: words };
+}
+
+function showBanScreen(emailValue, reason, matchedWords){
+  document.getElementById("banEmail").textContent = emailValue;
+  document.getElementById("banReason").textContent = reason;
+  document.getElementById("banWords").innerHTML = matchedWords
+    .map(w => `<span class="ban-word-chip">${w}</span>`)
+    .join(" ");
+
+  mainContent.style.display = "none";
+  banScreen.style.display = "block";
+  title.textContent = "Account Banned";
+  subtitle.textContent = "This email cannot be used";
+}
+
+window.dismissBan = function(){
+  banScreen.style.display = "none";
+  mainContent.style.display = "block";
+  title.textContent = mode === "signin" ? "Sign in" : "Create account";
+  subtitle.textContent = mode === "signin" ? "Use your Jxo Account" : "Create your Jxo Account";
+  // Reset back to email step
+  step = "email";
+  showStep("email");
+  email.value = "";
+  password.value = "";
+  status.textContent = "";
+  nextBtn.textContent = "Next";
+  nextBtn.disabled = false;
+  requestAnimationFrame(() => email.focus());
+};
 
 /* ---- LOCAL STORAGE ---- */
 function getSavedAccounts(){
@@ -425,28 +592,15 @@ async function checkTrustedSite(){
       currentDomain === site || currentDomain.endsWith('.' + site)
     );
     
-    // Check if first time user
     const hasSeenWarning = localStorage.getItem('jxoFirstTimeWarning');
     
     if (!hasSeenWarning) {
-      // Show first-time warning to everyone
-      infoBanner.textContent = trustedSitesData.firstTimeMessage;
-      infoBanner.style.display = 'block';
       localStorage.setItem('jxoFirstTimeWarning', 'true');
-    }
-    
-    if (!isTrustedSite) {
-      // Show warning for untrusted sites
-      warningBanner.textContent = trustedSitesData.warningMessage;
-      warningBanner.style.display = 'block';
     }
     
     return isTrustedSite;
   } catch (error) {
     console.error('Failed to load trusted sites:', error);
-    // Fail-safe: show warning if can't verify
-    warningBanner.textContent = '⚠️ Could not verify site security. Proceed with caution.';
-    warningBanner.style.display = 'block';
     return false;
   }
 }
@@ -488,7 +642,6 @@ function renderAccounts(){
     `;
   }).join('');
 
-  // Hide steps
   Object.values(steps).forEach(s=>s.classList.remove("active"));
   nextBtn.style.display = "none";
   toggle.textContent = "Use another account";
@@ -506,18 +659,16 @@ photoFile.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if(!file) return;
 
-  // Resize and convert to base64
   const reader = new FileReader();
   reader.onload = (evt) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const size = 200; // Resize to 200x200 to save space
+      const size = 200;
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
       
-      // Draw image centered and cropped
       const scale = Math.max(size / img.width, size / img.height);
       const x = (size / 2) - (img.width / 2) * scale;
       const y = (size / 2) - (img.height / 2) * scale;
@@ -565,6 +716,14 @@ function proceed(){
 
   if(step==="email"){
     if(!email.value) return status.textContent="Enter email";
+
+    // BAN CHECK at email step
+    const banResult = checkEmailBanned(email.value);
+    if(banResult.banned){
+      showBanScreen(email.value, banResult.reason, banResult.matchedWords);
+      return;
+    }
+
     step="password";
     showStep("password");
     title.textContent="Enter password";
@@ -602,7 +761,6 @@ function proceed(){
     subtitle.textContent="How you'll appear on Jxo";
     nextBtn.textContent="Create account";
     
-    // Set initial in preview
     if(email.value){
       profileInitial.textContent = email.value[0].toUpperCase();
     }
@@ -619,7 +777,6 @@ function proceed(){
     
     createUserWithEmailAndPassword(auth,email.value,password.value)
       .then(async cred=>{
-        // Save photo to Firestore
         let photoURL = null;
         if(uploadedPhotoBase64){
           photoURL = await savePhotoToFirestore(cred.user.uid, uploadedPhotoBase64);
@@ -661,7 +818,6 @@ function handleSuccess(user){
 toggle.onclick=()=>{
   const accounts = getSavedAccounts();
   
-  // If we're on account list or password step, go to sign in page
   if(accounts.length > 0 && (step === "email" || step === "password")){
     accountList.innerHTML = "";
     mode = "signin";
@@ -716,27 +872,30 @@ accountList.addEventListener("click", async (e) => {
   }
 
   const selectedEmail = accountDiv.dataset.email;
+
+  // BAN CHECK when selecting a saved account
+  const banResult = checkEmailBanned(selectedEmail);
+  if(banResult.banned){
+    showBanScreen(selectedEmail, banResult.reason, banResult.matchedWords);
+    return;
+  }
+
   const accounts = getSavedAccounts();
   const account = accounts.find(a => a.email === selectedEmail);
   
   if(account){
-    // Check if session is still valid (within 30 days)
     if(isSessionValid(account)){
-      // Show signing in status
       title.textContent = "Signing in...";
       subtitle.textContent = account.displayName;
       status.textContent = "Session still valid! Redirecting...";
       status.style.color = "#81c784";
       
-      // Check if user is already signed in with Firebase
       auth.onAuthStateChanged(async (user) => {
         if(user && user.email === account.email){
-          // User is already signed in
           const photoURL = await getPhotoFromFirestore(user.uid);
           saveAccount(user, photoURL, true);
           handleSuccess(user);
         } else {
-          // Need to sign in again (prompt for password)
           email.value = account.email;
           mode = "signin";
           step = "password";
@@ -753,7 +912,6 @@ accountList.addEventListener("click", async (e) => {
         }
       });
     } else {
-      // Session expired, require password
       email.value = account.email;
       mode = "signin";
       step = "password";
@@ -772,32 +930,22 @@ accountList.addEventListener("click", async (e) => {
 
 /* ---- ENTER KEY ---- */
 email.addEventListener("keydown", e => {
-  if(e.key === "Enter") {
-    e.preventDefault();
-    proceed();
-  }
+  if(e.key === "Enter") { e.preventDefault(); proceed(); }
 });
 
 password.addEventListener("keydown", e => {
-  if(e.key === "Enter") {
-    e.preventDefault();
-    proceed();
-  }
+  if(e.key === "Enter") { e.preventDefault(); proceed(); }
 });
 
 displayName.addEventListener("keydown", e => {
-  if(e.key === "Enter") {
-    e.preventDefault();
-    proceed();
-  }
+  if(e.key === "Enter") { e.preventDefault(); proceed(); }
 });
 
 nextBtn.onclick = proceed;
 
-// Check trusted sites on load
+// Init
 checkTrustedSite();
-
-// Initial render
+loadBans();
 renderAccounts();
 if(getSavedAccounts().length === 0){
   email.focus();
