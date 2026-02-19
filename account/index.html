@@ -818,22 +818,14 @@ function handleSuccess(user){
 toggle.onclick=()=>{
   const accounts = getSavedAccounts();
   
-  if(accounts.length > 0 && (step === "email" || step === "password")){
-    accountList.innerHTML = "";
-    mode = "signin";
+  if(accounts.length > 0 && step === "password"){
+    renderAccounts();
     step = "email";
-    showStep("email");
-    title.textContent = "Sign in";
-    subtitle.textContent = "Use your Jxo Account";
-    nextBtn.textContent = "Next";
-    nextBtn.style.display = "block";
-    toggle.textContent = "Don't have an account? Create one!";
     email.value = "";
     password.value = "";
     status.textContent = "";
-    requestAnimationFrame(() => {
-      email.focus();
-    });
+    nextBtn.textContent = "Next";
+    nextBtn.disabled = false;
     return;
   }
 
