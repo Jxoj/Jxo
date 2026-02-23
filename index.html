@@ -729,27 +729,14 @@
         min-width: 35px;
       }
 
-      .main-layout.with-iframe .search-container {
-        width: 100%;
+      .iframe-panel {
+        width: calc(100vw - 32px);
+        right: 16px;
+        bottom: 16px;
       }
 
       .iframe-panel.open {
-        width: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 100;
-        min-height: 100vh;
-      }
-
-      .width-presets {
-        display: none;
-      }
-
-      .auto-fit-indicator {
-        display: none;
+        height: 360px;
       }
     }
   </style>
@@ -870,11 +857,6 @@
     let currentQuery = '';
     let currentPage = 1;
     let totalResults = 0;
-    let currentOzoUrl = '';
-    // Track whether we've received an auto-size message from the iframe
-    let autoFitActive = false;
-    // Track the manually chosen preset (null = auto)
-    let manualPresetPct = 50;
 
     const wallpapers = [
       { id: 'default', url: '', name: 'Default' },
@@ -887,151 +869,99 @@
       { id: 'nebula', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1920', name: 'Nebula' }
     ];
 
-    // ── iframe panel DOM refs ────────────────────────────────────────
-    const iframePanel    = document.getElementById('iframePanel');
-    const mainLayout     = document.getElementById('mainLayout');
-    const ozoIframe      = document.getElementById('ozoIframe');
-    const iframeLoading  = document.getElementById('iframeLoading');
+    // ── Mini AI Box DOM refs ─────────────────────────────────────────
+    const iframePanel      = document.getElementById('iframePanel');
+    const mainLayout       = document.getElementById('mainLayout');
+    const ozoIframe        = document.getElementById('ozoIframe');
+    const iframeLoading    = document.getElementById('iframeLoading');
     const iframePanelTitle = document.getElementById('iframePanelTitle');
     const openExternalBtn  = document.getElementById('openExternalBtn');
     const closeIframeBtn   = document.getElementById('closeIframeBtn');
-    const autoFitIndicator = document.getElementById('autoFitIndicator');
-    const autoFitLabel     = document.getElementById('autoFitLabel');
+    const minimizeBtn      = document.getElementById('minimizeIframeBtn');
+    const dragHandle       = document.getElementById('iframeDragHandle');
 
-    // ── Auto-resize via postMessage ──────────────────────────────────
-    // The Ozo iframe (or any same-origin iframe) can send:
-    //   window.parent.postMessage({ type: 'resize', width: 640 }, '*')
-    // We listen and respond by setting the panel width accordingly.
-    //
-    // For cross-origin iframes we can't read their DOM, but we:
-    //   1. Attempt to probe via a ResizeObserver on the iframe element itself
-    //      (the iframe el size changes when the browser lays it out differently
-    //       — not the inner content, but we can still watch for scroll width clues)
-    //   2. Listen for postMessage resize hints
-    //   3. Fall back to preset buttons the user can click
-    //
-    // We also inject a tiny script into any same-origin iframe via iframeEl.contentWindow
-    // to report its scrollWidth/scrollHeight back to us.
+    let currentOzoUrl  = '';
+    let isMinimized    = false;
 
-    function setIframePanelWidth(widthPx, source) {
-      const totalWidth = mainLayout.offsetWidth;
-      if (totalWidth === 0) return;
-      const pct = Math.min(75, Math.max(20, (widthPx / totalWidth) * 100));
+    // ── Drag to reposition ───────────────────────────────────────────
+    let dragState = null;
 
-      iframePanel.style.width = pct + '%';
-
-      // Sync preset highlight
-      syncPresetHighlight(pct);
-
-      if (source === 'postmessage' || source === 'probe') {
-        setAutoFitActive(true, widthPx);
-      }
-    }
-
-    function setAutoFitActive(active, px) {
-      autoFitActive = active;
-      if (active) {
-        autoFitIndicator.classList.add('active');
-        autoFitLabel.textContent = px ? `${Math.round(px)}px` : 'auto-fit';
-        autoFitIndicator.title = `Panel auto-sized to content width (${Math.round(px)}px). Drag or use presets to override.`;
-      } else {
-        autoFitIndicator.classList.remove('active');
-        autoFitLabel.textContent = 'auto-fit';
-        autoFitIndicator.title = 'Listening for content size from iframe';
-      }
-    }
-
-    // Listen for postMessage from the iframe
-    window.addEventListener('message', (e) => {
-      // Accept from any origin since Ozo is cross-origin
-      if (!e.data || typeof e.data !== 'object') return;
-
-      if (e.data.type === 'resize' && typeof e.data.width === 'number') {
-        // iframe is reporting its own desired width
-        const desiredPx = e.data.width + 32; // small buffer
-        setIframePanelWidth(desiredPx, 'postmessage');
-      }
-
-      if (e.data.type === 'jxo-iframe-size' && typeof e.data.scrollWidth === 'number') {
-        const desiredPx = e.data.scrollWidth + 32;
-        setIframePanelWidth(desiredPx, 'postmessage');
-      }
+    dragHandle.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.iframe-action-btn')) return; // ignore button clicks
+      const rect = iframePanel.getBoundingClientRect();
+      dragState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        origRight: window.innerWidth - rect.right,
+        origBottom: window.innerHeight - rect.bottom
+      };
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'grabbing';
+      ozoIframe.style.pointerEvents = 'none';
+      e.preventDefault();
     });
 
-    // Probe same-origin iframes by injecting a size reporter
-    function tryInjectSizeProbe() {
-      try {
-        const doc = ozoIframe.contentDocument || ozoIframe.contentWindow?.document;
-        if (!doc || !doc.body) return;
+    document.addEventListener('mousemove', (e) => {
+      if (!dragState) return;
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+      let newRight  = dragState.origRight - dx;
+      let newBottom = dragState.origBottom - dy;
 
-        // Same-origin: we can read scroll dimensions directly
-        const probe = () => {
-          try {
-            const sw = Math.max(
-              doc.body.scrollWidth,
-              doc.documentElement.scrollWidth
-            );
-            if (sw > 100) {
-              setIframePanelWidth(sw + 32, 'probe');
-            }
-          } catch(e) { /* cross-origin, ignore */ }
-        };
+      const panelW = iframePanel.offsetWidth;
+      const panelH = iframePanel.offsetHeight;
+      newRight  = Math.max(8, Math.min(newRight,  window.innerWidth  - panelW - 8));
+      newBottom = Math.max(8, Math.min(newBottom, window.innerHeight - 44 - 8));
 
-        probe();
-
-        // Also watch for future changes via ResizeObserver on the body
-        if (window.ResizeObserver) {
-          const ro = new ResizeObserver(() => probe());
-          ro.observe(doc.body);
-          // Disconnect when iframe navigates away
-          ozoIframe.addEventListener('load', () => ro.disconnect(), { once: true });
-        }
-      } catch (e) {
-        // Cross-origin – silently ignored, postMessage is the fallback
-      }
-    }
-
-    // ── Preset width buttons ─────────────────────────────────────────
-    function syncPresetHighlight(currentPct) {
-      document.querySelectorAll('.width-preset-btn').forEach(btn => {
-        const bPct = parseInt(btn.dataset.pct);
-        btn.classList.toggle('active', Math.abs(bPct - currentPct) < 3);
-      });
-    }
-
-    document.querySelectorAll('.width-preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const pct = parseInt(btn.dataset.pct);
-        manualPresetPct = pct;
-        autoFitActive = false;
-        setAutoFitActive(false);
-        iframePanel.style.width = pct + '%';
-        syncPresetHighlight(pct);
-      });
+      iframePanel.style.right  = newRight + 'px';
+      iframePanel.style.bottom = newBottom + 'px';
     });
 
-    // ── Open / close / update panel ──────────────────────────────────
+    document.addEventListener('mouseup', () => {
+      if (!dragState) return;
+      dragState = null;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      ozoIframe.style.pointerEvents = '';
+    });
+
+    // ── Minimize / restore ───────────────────────────────────────────
+    minimizeBtn.addEventListener('click', () => {
+      isMinimized = !isMinimized;
+      iframePanel.classList.toggle('minimized', isMinimized);
+      minimizeBtn.title = isMinimized ? 'Restore' : 'Minimize';
+      minimizeBtn.innerHTML = isMinimized
+        ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>`
+        : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+    });
+
+    // Double-click header to minimize/restore too
+    dragHandle.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.iframe-action-btn')) return;
+      minimizeBtn.click();
+    });
+
+    // ── Open / close / update ────────────────────────────────────────
     function openIframePanel(query) {
       const url = `https://jxoj.github.io/Ozo?jxosearch=${encodeURIComponent(query)}`;
       currentOzoUrl = url;
 
-      iframePanelTitle.textContent = `Ozo: ${query}`;
+      iframePanelTitle.textContent = query.length > 28 ? query.slice(0, 28) + '…' : query;
       iframeLoading.style.display = 'flex';
       ozoIframe.style.opacity = '0';
-      setAutoFitActive(false);
 
       ozoIframe.onload = () => {
         iframeLoading.style.display = 'none';
         ozoIframe.style.opacity = '1';
-        // Try to probe same-origin size immediately after load
-        setTimeout(tryInjectSizeProbe, 300);
       };
 
       ozoIframe.src = url;
 
-      // Set initial width from last manual preset or default 50%
-      iframePanel.style.width = manualPresetPct + '%';
-      syncPresetHighlight(manualPresetPct);
+      // Restore if minimized when a new search comes in
+      if (isMinimized) {
+        isMinimized = false;
+        iframePanel.classList.remove('minimized');
+      }
 
       iframePanel.classList.add('open');
       mainLayout.classList.add('with-iframe');
@@ -1042,69 +972,39 @@
       if (url === currentOzoUrl) return;
       currentOzoUrl = url;
 
-      iframePanelTitle.textContent = `Ozo: ${query}`;
+      iframePanelTitle.textContent = query.length > 28 ? query.slice(0, 28) + '…' : query;
       iframeLoading.style.display = 'flex';
       ozoIframe.style.opacity = '0';
-      setAutoFitActive(false);
 
       ozoIframe.onload = () => {
         iframeLoading.style.display = 'none';
         ozoIframe.style.opacity = '1';
-        setTimeout(tryInjectSizeProbe, 300);
       };
 
       ozoIframe.src = url;
+
+      if (isMinimized) {
+        isMinimized = false;
+        iframePanel.classList.remove('minimized');
+      }
     }
 
     function closeIframePanel() {
       iframePanel.classList.remove('open');
       mainLayout.classList.remove('with-iframe');
-      setAutoFitActive(false);
       setTimeout(() => {
         ozoIframe.src = 'about:blank';
         currentOzoUrl = '';
-      }, 400);
+      }, 350);
     }
 
     closeIframeBtn.addEventListener('click', closeIframePanel);
-
     openExternalBtn.addEventListener('click', () => {
       if (currentOzoUrl) window.open(currentOzoUrl, '_blank');
     });
 
-    // ── Resize handle (manual drag) ──────────────────────────────────
+    // Resize handle stub (not used in mini-box mode)
     const resizeHandle = document.getElementById('resizeHandle');
-    let isResizing = false;
-
-    resizeHandle.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      resizeHandle.classList.add('dragging');
-      document.body.style.userSelect = 'none';
-      document.body.style.cursor = 'col-resize';
-      ozoIframe.style.pointerEvents = 'none';
-      // Manual drag disables auto-fit
-      setAutoFitActive(false);
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isResizing) return;
-      const totalWidth = mainLayout.offsetWidth;
-      const iframeRight = totalWidth - e.clientX;
-      const pct = (iframeRight / totalWidth) * 100;
-      if (pct > 20 && pct < 75) {
-        iframePanel.style.width = pct + '%';
-        syncPresetHighlight(pct);
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      if (!isResizing) return;
-      isResizing = false;
-      resizeHandle.classList.remove('dragging');
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-      ozoIframe.style.pointerEvents = '';
-    });
 
     // ── Existing app logic (unchanged) ──────────────────────────────
     async function initializeApp() {
