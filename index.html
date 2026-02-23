@@ -491,76 +491,153 @@
       text-align: center;
     }
 
-    /* ── Side iframe panel ── */
+    /* ── Mini AI Box ── */
     .iframe-panel {
-      width: 0;
-      min-height: calc(100vh - 88px);
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 360px;
+      height: 0;
       background: #161616;
-      border-left: 1px solid #2a2a2a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      flex-shrink: 0;
-      position: relative;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(138,180,248,0.08);
+      transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, box-shadow 0.2s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 200;
+      /* No longer part of the flex flow */
     }
 
     .iframe-panel.open {
-      width: 50%;
+      height: 480px;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .iframe-panel.minimized {
+      height: 44px;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .iframe-panel:hover {
+      box-shadow: 0 12px 50px rgba(0,0,0,0.7), 0 0 0 1px rgba(138,180,248,0.18);
+    }
+
+    /* Since the panel is now fixed/floating, remove the side-split layout */
+    .main-layout.with-iframe .search-container {
+      width: 100% !important;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .iframe-panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 18px;
+      padding: 0 12px;
+      height: 44px;
+      min-height: 44px;
       background: #1c1c1c;
       border-bottom: 1px solid #2a2a2a;
       flex-shrink: 0;
+      cursor: grab;
+      border-radius: 16px 16px 0 0;
+      user-select: none;
+    }
+
+    .iframe-panel.minimized .iframe-panel-header {
+      border-bottom: none;
+      border-radius: 16px;
+    }
+
+    .iframe-panel-header:active {
+      cursor: grabbing;
     }
 
     .iframe-panel-title {
-      color: #aaa;
-      font-size: 13px;
-      font-weight: 500;
+      color: #eaeaea;
+      font-size: 12px;
+      font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
     }
 
-    .iframe-panel-title svg {
+    /* AI sparkle icon */
+    .ai-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, #1a2a4a, #162240);
+      border: 1px solid #2a4070;
+      border-radius: 8px;
+      padding: 3px 8px;
       flex-shrink: 0;
+    }
+
+    .ai-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #8ab4f8;
+      box-shadow: 0 0 6px #8ab4f8;
+      animation: aipulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes aipulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px #8ab4f8; }
+      50% { opacity: 0.5; box-shadow: 0 0 2px #8ab4f8; }
+    }
+
+    .ai-badge-label {
+      font-size: 10px;
+      font-weight: 700;
       color: #8ab4f8;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     .iframe-panel-actions {
       display: flex;
-      gap: 8px;
+      gap: 4px;
       flex-shrink: 0;
-      margin-left: 12px;
+      margin-left: 8px;
+      align-items: center;
     }
 
     .iframe-action-btn {
-      background: #252525;
-      border: 1px solid #333;
-      color: #8ab4f8;
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: #666;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      transition: all 0.15s;
       flex-shrink: 0;
     }
 
     .iframe-action-btn:hover {
-      background: #2e2e2e;
-      border-color: #444;
+      background: #252525;
+      color: #aaa;
+    }
+
+    .iframe-action-btn.close-btn:hover {
+      background: #3a1a1a;
+      color: #ff6b6b;
     }
 
     .iframe-panel iframe {
@@ -569,11 +646,12 @@
       height: 100%;
       border: none;
       background: #fff;
+      border-radius: 0 0 16px 16px;
     }
 
     .iframe-loading {
       position: absolute;
-      top: 55px;
+      top: 44px;
       left: 0;
       right: 0;
       bottom: 0;
@@ -582,15 +660,16 @@
       align-items: center;
       justify-content: center;
       background: #161616;
-      gap: 14px;
-      color: #666;
-      font-size: 14px;
+      gap: 12px;
+      color: #555;
+      font-size: 13px;
+      border-radius: 0 0 16px 16px;
     }
 
     .iframe-spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid #2a2a2a;
+      width: 28px;
+      height: 28px;
+      border: 2px solid #2a2a2a;
       border-top-color: #8ab4f8;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -600,23 +679,12 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Resize handle */
-    .resize-handle {
-      position: absolute;
-      left: -4px;
-      top: 0;
-      bottom: 0;
-      width: 8px;
-      cursor: col-resize;
-      z-index: 10;
-      background: transparent;
-      transition: background 0.2s;
-    }
+    /* Drag handle area on header — no separate element needed */
+    .resize-handle { display: none; }
 
-    .resize-handle:hover,
-    .resize-handle.dragging {
-      background: rgba(138, 180, 248, 0.3);
-    }
+    /* Width presets / auto-fit removed — not needed for mini box */
+    .width-presets { display: none; }
+    .auto-fit-indicator { display: none; }
 
     @media (max-width: 768px) {
       .header {
@@ -674,6 +742,14 @@
         bottom: 0;
         z-index: 100;
         min-height: 100vh;
+      }
+
+      .width-presets {
+        display: none;
+      }
+
+      .auto-fit-indicator {
+        display: none;
       }
     }
   </style>
@@ -740,27 +816,32 @@
         </div>
       </div>
 
-      <!-- Side iframe panel -->
+      <!-- Mini AI Box -->
       <div class="iframe-panel" id="iframePanel">
         <div class="resize-handle" id="resizeHandle"></div>
-        <div class="iframe-panel-header">
+        <div class="iframe-panel-header" id="iframeDragHandle">
+          <div class="ai-badge">
+            <div class="ai-badge-dot"></div>
+            <span class="ai-badge-label">AI</span>
+          </div>
           <div class="iframe-panel-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
-            <span id="iframePanelTitle">Ozo Search</span>
+            <span id="iframePanelTitle">Ozo</span>
           </div>
           <div class="iframe-panel-actions">
             <button class="iframe-action-btn" id="openExternalBtn" title="Open in new tab">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                 <polyline points="15 3 21 3 21 9"></polyline>
                 <line x1="10" y1="14" x2="21" y2="3"></line>
               </svg>
             </button>
-            <button class="iframe-action-btn" id="closeIframeBtn" title="Close panel">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <button class="iframe-action-btn" id="minimizeIframeBtn" title="Minimize">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <button class="iframe-action-btn close-btn" id="closeIframeBtn" title="Close">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -769,7 +850,7 @@
         </div>
         <div class="iframe-loading" id="iframeLoading">
           <div class="iframe-spinner"></div>
-          <span>Loading Ozo Search...</span>
+          <span>Loading AI...</span>
         </div>
         <iframe id="ozoIframe" src="about:blank" title="Ozo Search"></iframe>
       </div>
@@ -790,6 +871,10 @@
     let currentPage = 1;
     let totalResults = 0;
     let currentOzoUrl = '';
+    // Track whether we've received an auto-size message from the iframe
+    let autoFitActive = false;
+    // Track the manually chosen preset (null = auto)
+    let manualPresetPct = 50;
 
     const wallpapers = [
       { id: 'default', url: '', name: 'Default' },
@@ -802,15 +887,130 @@
       { id: 'nebula', url: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1920', name: 'Nebula' }
     ];
 
-    // ── iframe panel logic ──────────────────────────────────────────
-    const iframePanel = document.getElementById('iframePanel');
-    const mainLayout = document.getElementById('mainLayout');
-    const ozoIframe = document.getElementById('ozoIframe');
-    const iframeLoading = document.getElementById('iframeLoading');
+    // ── iframe panel DOM refs ────────────────────────────────────────
+    const iframePanel    = document.getElementById('iframePanel');
+    const mainLayout     = document.getElementById('mainLayout');
+    const ozoIframe      = document.getElementById('ozoIframe');
+    const iframeLoading  = document.getElementById('iframeLoading');
     const iframePanelTitle = document.getElementById('iframePanelTitle');
-    const openExternalBtn = document.getElementById('openExternalBtn');
-    const closeIframeBtn = document.getElementById('closeIframeBtn');
+    const openExternalBtn  = document.getElementById('openExternalBtn');
+    const closeIframeBtn   = document.getElementById('closeIframeBtn');
+    const autoFitIndicator = document.getElementById('autoFitIndicator');
+    const autoFitLabel     = document.getElementById('autoFitLabel');
 
+    // ── Auto-resize via postMessage ──────────────────────────────────
+    // The Ozo iframe (or any same-origin iframe) can send:
+    //   window.parent.postMessage({ type: 'resize', width: 640 }, '*')
+    // We listen and respond by setting the panel width accordingly.
+    //
+    // For cross-origin iframes we can't read their DOM, but we:
+    //   1. Attempt to probe via a ResizeObserver on the iframe element itself
+    //      (the iframe el size changes when the browser lays it out differently
+    //       — not the inner content, but we can still watch for scroll width clues)
+    //   2. Listen for postMessage resize hints
+    //   3. Fall back to preset buttons the user can click
+    //
+    // We also inject a tiny script into any same-origin iframe via iframeEl.contentWindow
+    // to report its scrollWidth/scrollHeight back to us.
+
+    function setIframePanelWidth(widthPx, source) {
+      const totalWidth = mainLayout.offsetWidth;
+      if (totalWidth === 0) return;
+      const pct = Math.min(75, Math.max(20, (widthPx / totalWidth) * 100));
+
+      iframePanel.style.width = pct + '%';
+
+      // Sync preset highlight
+      syncPresetHighlight(pct);
+
+      if (source === 'postmessage' || source === 'probe') {
+        setAutoFitActive(true, widthPx);
+      }
+    }
+
+    function setAutoFitActive(active, px) {
+      autoFitActive = active;
+      if (active) {
+        autoFitIndicator.classList.add('active');
+        autoFitLabel.textContent = px ? `${Math.round(px)}px` : 'auto-fit';
+        autoFitIndicator.title = `Panel auto-sized to content width (${Math.round(px)}px). Drag or use presets to override.`;
+      } else {
+        autoFitIndicator.classList.remove('active');
+        autoFitLabel.textContent = 'auto-fit';
+        autoFitIndicator.title = 'Listening for content size from iframe';
+      }
+    }
+
+    // Listen for postMessage from the iframe
+    window.addEventListener('message', (e) => {
+      // Accept from any origin since Ozo is cross-origin
+      if (!e.data || typeof e.data !== 'object') return;
+
+      if (e.data.type === 'resize' && typeof e.data.width === 'number') {
+        // iframe is reporting its own desired width
+        const desiredPx = e.data.width + 32; // small buffer
+        setIframePanelWidth(desiredPx, 'postmessage');
+      }
+
+      if (e.data.type === 'jxo-iframe-size' && typeof e.data.scrollWidth === 'number') {
+        const desiredPx = e.data.scrollWidth + 32;
+        setIframePanelWidth(desiredPx, 'postmessage');
+      }
+    });
+
+    // Probe same-origin iframes by injecting a size reporter
+    function tryInjectSizeProbe() {
+      try {
+        const doc = ozoIframe.contentDocument || ozoIframe.contentWindow?.document;
+        if (!doc || !doc.body) return;
+
+        // Same-origin: we can read scroll dimensions directly
+        const probe = () => {
+          try {
+            const sw = Math.max(
+              doc.body.scrollWidth,
+              doc.documentElement.scrollWidth
+            );
+            if (sw > 100) {
+              setIframePanelWidth(sw + 32, 'probe');
+            }
+          } catch(e) { /* cross-origin, ignore */ }
+        };
+
+        probe();
+
+        // Also watch for future changes via ResizeObserver on the body
+        if (window.ResizeObserver) {
+          const ro = new ResizeObserver(() => probe());
+          ro.observe(doc.body);
+          // Disconnect when iframe navigates away
+          ozoIframe.addEventListener('load', () => ro.disconnect(), { once: true });
+        }
+      } catch (e) {
+        // Cross-origin – silently ignored, postMessage is the fallback
+      }
+    }
+
+    // ── Preset width buttons ─────────────────────────────────────────
+    function syncPresetHighlight(currentPct) {
+      document.querySelectorAll('.width-preset-btn').forEach(btn => {
+        const bPct = parseInt(btn.dataset.pct);
+        btn.classList.toggle('active', Math.abs(bPct - currentPct) < 3);
+      });
+    }
+
+    document.querySelectorAll('.width-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pct = parseInt(btn.dataset.pct);
+        manualPresetPct = pct;
+        autoFitActive = false;
+        setAutoFitActive(false);
+        iframePanel.style.width = pct + '%';
+        syncPresetHighlight(pct);
+      });
+    });
+
+    // ── Open / close / update panel ──────────────────────────────────
     function openIframePanel(query) {
       const url = `https://jxoj.github.io/Ozo?jxosearch=${encodeURIComponent(query)}`;
       currentOzoUrl = url;
@@ -818,13 +1018,20 @@
       iframePanelTitle.textContent = `Ozo: ${query}`;
       iframeLoading.style.display = 'flex';
       ozoIframe.style.opacity = '0';
+      setAutoFitActive(false);
 
       ozoIframe.onload = () => {
         iframeLoading.style.display = 'none';
         ozoIframe.style.opacity = '1';
+        // Try to probe same-origin size immediately after load
+        setTimeout(tryInjectSizeProbe, 300);
       };
 
       ozoIframe.src = url;
+
+      // Set initial width from last manual preset or default 50%
+      iframePanel.style.width = manualPresetPct + '%';
+      syncPresetHighlight(manualPresetPct);
 
       iframePanel.classList.add('open');
       mainLayout.classList.add('with-iframe');
@@ -838,10 +1045,12 @@
       iframePanelTitle.textContent = `Ozo: ${query}`;
       iframeLoading.style.display = 'flex';
       ozoIframe.style.opacity = '0';
+      setAutoFitActive(false);
 
       ozoIframe.onload = () => {
         iframeLoading.style.display = 'none';
         ozoIframe.style.opacity = '1';
+        setTimeout(tryInjectSizeProbe, 300);
       };
 
       ozoIframe.src = url;
@@ -850,6 +1059,7 @@
     function closeIframePanel() {
       iframePanel.classList.remove('open');
       mainLayout.classList.remove('with-iframe');
+      setAutoFitActive(false);
       setTimeout(() => {
         ozoIframe.src = 'about:blank';
         currentOzoUrl = '';
@@ -862,7 +1072,7 @@
       if (currentOzoUrl) window.open(currentOzoUrl, '_blank');
     });
 
-    // ── Resize handle ───────────────────────────────────────────────
+    // ── Resize handle (manual drag) ──────────────────────────────────
     const resizeHandle = document.getElementById('resizeHandle');
     let isResizing = false;
 
@@ -872,6 +1082,8 @@
       document.body.style.userSelect = 'none';
       document.body.style.cursor = 'col-resize';
       ozoIframe.style.pointerEvents = 'none';
+      // Manual drag disables auto-fit
+      setAutoFitActive(false);
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -881,6 +1093,7 @@
       const pct = (iframeRight / totalWidth) * 100;
       if (pct > 20 && pct < 75) {
         iframePanel.style.width = pct + '%';
+        syncPresetHighlight(pct);
       }
     });
 
@@ -893,7 +1106,7 @@
       ozoIframe.style.pointerEvents = '';
     });
 
-    // ── Existing app logic (unchanged) ─────────────────────────────
+    // ── Existing app logic (unchanged) ──────────────────────────────
     async function initializeApp() {
       try {
         console.log('Initializing Jxo SDK...');
