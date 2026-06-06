@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centered Image</title>
+    <style>
+        /* Reset defaults and make the body take up the full screen height */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #ffffff; /* White background */
+            
+            /* Center everything inside the body both horizontally and vertically */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Style and limit the size of the image */
+        .centered-image {
+            max-width: 90%;  /* Prevents it from touching the screen edges on mobile */
+            max-height: 90vh; /* Prevents it from being taller than the screen */
+            width: auto;      /* Maintains aspect ratio */
+            height: auto;     /* Maintains aspect ratio */
+        }
+    </style>
+</head>
+<body>
+
+    <img src="https://jxoj.github.io/Jxo/assets/imgs/jxo.png" alt="Jxo Logo" class="centered-image">
+
+</body>
+</html>
