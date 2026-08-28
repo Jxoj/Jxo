@@ -466,7 +466,7 @@
     </div>
     
     <div class="current-user-card">
-      <div class="profile-btn" id="panelAvatar" style="width:48px;height:48px;"><img src="https://jxoj.github.com/Jxo/assets/jxo.png" alt="Profile"></div>
+      <div class="profile-btn" id="panelAvatar" style="width:48px;height:48px;"><img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Profile"></div>
       <div class="current-user-info">
         <div class="current-user-name" id="panelName">User Name</div>
         <div class="current-user-email" id="panelEmail">user@example.com</div>
@@ -483,7 +483,7 @@
     
     <div class="ntp-only">
       <div class="logo-container">
-        <img src="assets/Jxo.png" alt="Jxo Logo" class="jxo-logo-img">
+        <img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Jxo Logo" class="jxo-logo-img">
       </div>
     </div>
 
@@ -630,7 +630,7 @@
 
     function updateUIForUser() {
       if (currentUser) {
-        const photoUrl = currentUser.photoURL || 'assets/jxo.png';
+        const photoUrl = currentUser.photoURL || 'https://jxoj.github.io/Jxo/assets/jxo.png';
         accountArea.innerHTML = `<button class="profile-btn" id="profileBtn"><img src="${photoUrl}" alt="Profile"></button>`;
         
         document.getElementById('panelAvatar').innerHTML = `<img src="${photoUrl}" alt="Profile">`;
