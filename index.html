@@ -6,7 +6,7 @@
   <title>Jxo Search</title>
   <style>
     :root {
-      --bg-color: #1b3b32; /* Dark green from the image */
+      --bg-color: #1b3b32;
       --surface-dark: #202124;
       --surface-hover: rgba(255, 255, 255, 0.1);
       --text-main: #e3e3e3;
@@ -63,14 +63,6 @@
       z-index: 50;
     }
 
-    .top-link {
-      color: var(--text-main);
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .top-link:hover { text-decoration: underline; }
-
     .icon-btn {
       width: 40px; height: 40px;
       border-radius: 50%;
@@ -90,7 +82,7 @@
     .profile-btn {
       width: 32px; height: 32px;
       border-radius: 50%;
-      background: #c63d2f;
+      background: transparent;
       color: white;
       border: none;
       font-weight: 600;
@@ -164,17 +156,6 @@
       -webkit-text-fill-color: transparent;
       user-select: none;
     }
-
-    .logo-share {
-      position: absolute;
-      bottom: -15px; right: -15px;
-      width: 32px; height: 32px;
-      background: #1a1a1a;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-    }
-    .logo-share svg { width: 16px; height: 16px; fill: #e3e3e3; }
 
     /* --- SEARCH BAR --- */
     .search-box-container {
@@ -274,8 +255,6 @@
       border: 1px solid rgba(255,255,255,0.1);
     }
     
-    .shortcut-icon-circle img { width: 100%; height: 100%; object-fit: cover; }
-
     .shortcut-title {
       font-size: 13px;
       color: var(--text-main);
@@ -357,17 +336,7 @@
     .current-user-info { flex: 1; overflow: hidden; }
     .current-user-name { font-weight: 500; font-size: 15px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .current-user-email { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .acc-arrow { color: var(--text-main); background: #2a2a2a; border-radius: 50%; padding: 4px; }
 
-    .acc-action-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px; border-radius: 12px;
-      cursor: pointer; color: var(--text-main);
-      font-size: 14px; font-weight: 500; margin-top: 4px;
-    }
-    .acc-action-item:hover { background: #2a2a2a; }
-    .acc-action-item svg { width: 20px; height: 20px; color: var(--text-muted); stroke: currentColor; fill: none; stroke-width: 2; }
-    
     .manage-jxo-btn {
       display: block; width: 100%; text-align: center;
       background: #121212; padding: 12px; border-radius: 24px;
@@ -377,16 +346,16 @@
     }
     .manage-jxo-btn:hover { background: #2a2a2a; }
 
-    .panel-footer {
-      display: flex; justify-content: center; gap: 12px;
-      margin-top: 16px; font-size: 11px; color: var(--text-muted);
-    }
-    .panel-footer a { color: var(--text-muted); text-decoration: none; }
-    .panel-footer a:hover { text-decoration: underline; }
-
     /* App Launcher Panel */
     .apps-panel { width: 320px; padding: 20px; }
     .apps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .no-apps-msg {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 20px 0;
+    }
     .app-icon {
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       padding: 12px 8px; border-radius: 16px; cursor: pointer; text-decoration: none;
@@ -398,7 +367,6 @@
     /* Generic Modal Styling */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1500; display: none; }
     .modal-overlay.active { display: block; }
-
     .custom-modal {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       background: var(--panel-bg); padding: 24px; border-radius: 24px;
@@ -408,113 +376,47 @@
     .custom-modal.active { display: block; }
     .custom-modal h3 { margin-bottom: 16px; font-size: 16px; }
     .modal-input { width: 100%; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 12px; color: white; margin-bottom: 12px; outline: none; }
-    .modal-input:focus { border-color: var(--primary-accent); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
     .modal-btn { padding: 8px 16px; border-radius: 16px; border: none; cursor: pointer; font-weight: 500; font-size: 13px; }
     .modal-btn.cancel { background: transparent; color: var(--primary-accent); }
-    .modal-btn.cancel:hover { background: rgba(138, 180, 248, 0.1); }
     .modal-btn.save { background: var(--primary-accent); color: #121212; }
 
     /* Wallpaper Grid specific to the Customize Modal */
     #customizeModal { width: 480px; max-width: 90vw; }
     .wallpaper-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-      max-height: 280px;
-      overflow-y: auto;
-      padding-right: 4px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; max-height: 280px; overflow-y: auto;
     }
-    
-    /* Scrollbar styling for grid */
-    .wallpaper-grid::-webkit-scrollbar { width: 6px; }
-    .wallpaper-grid::-webkit-scrollbar-track { background: transparent; }
-    .wallpaper-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-    
     .wallpaper-option {
-      aspect-ratio: 16/9;
-      border-radius: 12px;
-      cursor: pointer;
-      border: 3px solid transparent;
-      background-size: cover;
-      background-position: center;
-      transition: all 0.2s;
+      aspect-ratio: 16/9; border-radius: 12px; cursor: pointer; border: 3px solid transparent; background-size: cover; background-position: center; transition: all 0.2s;
     }
     .wallpaper-option:hover { transform: scale(1.03); border-color: rgba(138, 180, 248, 0.5); }
     .wallpaper-option.active { border-color: var(--primary-accent); box-shadow: 0 0 0 2px var(--primary-accent); }
     .wallpaper-option.default-wall {
-      background: var(--bg-color);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-main); font-size: 13px; font-weight: 500;
+      background: var(--bg-color); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 13px; font-weight: 500;
     }
 
     /* --- SEARCH RESULTS VIEW --- */
     .results-area { width: 100%; max-width: 700px; display: none; position: relative; z-index: 2; }
     .has-results .results-area { display: block; }
     .has-results .search-box-container { margin-bottom: 30px; }
-    .has-results .search-box { background: #303134; border: 1px solid #3c4043; } /* Dark mode search bar for results */
+    .has-results .search-box { background: #303134; border: 1px solid #3c4043; } 
     .has-results .search-input { color: #e3e3e3; }
-    .has-results .ai-mode-btn { background: #1a1a1a; color: #e3e3e3; border: 1px solid #3c4043; }
-
+    
     .result-item { margin-bottom: 24px; }
     .result-url { color: #9aa0a6; font-size: 12px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
     .result-title { color: #8ab4f8; font-size: 20px; font-weight: 400; margin-bottom: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
     .result-title:hover { text-decoration: underline; }
     .result-desc { color: #bdc1c6; font-size: 14px; line-height: 1.6; }
-
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid #3c4043; }
-    .tab { color: #9aa0a6; cursor: pointer; padding: 6px 12px; border-radius: 16px; font-size: 13px; transition: all 0.2s; }
-    .tab:hover { background: #303134; }
-    .tab.active { color: #8ab4f8; background: rgba(138, 180, 248, 0.1); }
     
     .loading { color: #8ab4f8; margin-top: 20px; }
-
-    /* Mini AI Box (Ozo) */
-    .iframe-panel {
-      position: fixed; bottom: 24px; right: 24px;
-      width: 360px; height: 0;
-      background: #161616; border: 1px solid #2a2a2a; border-radius: 24px;
-      display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-      transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-      opacity: 0; pointer-events: none; z-index: 200;
-    }
-    .iframe-panel.open { height: 480px; opacity: 1; pointer-events: all; }
-    .iframe-panel.minimized { height: 52px; opacity: 1; pointer-events: all; }
-    
-    .iframe-panel-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 16px; height: 52px; background: #202124;
-      border-bottom: 1px solid #2a2a2a; cursor: grab; user-select: none;
-    }
-    .iframe-panel.minimized .iframe-panel-header { border-bottom: none; }
-    .iframe-panel-title { color: #e3e3e3; font-size: 13px; font-weight: 600; flex: 1; margin-left: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .ai-badge {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(138,180,248,0.1); border-radius: 12px; padding: 4px 10px;
-    }
-    .ai-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #8ab4f8; animation: aipulse 2s infinite; }
-    @keyframes aipulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .ai-badge-label { font-size: 11px; font-weight: 700; color: #8ab4f8; }
-    
-    .iframe-panel-actions { display: flex; gap: 6px; align-items: center; }
-    .iframe-action-btn { background: none; border: none; color: #9aa0a6; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
-    .iframe-action-btn:hover { background: #303134; color: #e3e3e3; }
-    
-    .iframe-panel iframe { flex: 1; width: 100%; height: 100%; border: none; background: #fff; }
   </style>
 </head>
 <body>
-  <!-- Global Overlays -->
   <div class="background-overlay" id="backgroundOverlay"></div>
   <div class="modal-overlay" id="modalOverlay"></div>
 
-  <!-- Top Navigation Bar -->
+  <!-- Top Navigation Bar (Removed Dummy Links) -->
   <div class="top-bar">
-    <a href="https://jxoj.github.io/Mail" class="top-link">Mail</a>
-    <a href="#" class="top-link">Images</a>
     <button class="icon-btn" id="appLauncherBtn" title="Jxo apps">
       <svg viewBox="0 0 24 24"><path d="M12 16c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm-6 12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm12 12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"></path></svg>
     </button>
@@ -523,29 +425,10 @@
     </div>
   </div>
 
-  <!-- Apps Launcher Panel -->
+  <!-- Apps Launcher Panel (Dynamic via JS) -->
   <div class="panel apps-panel" id="appsPanel">
-    <div class="apps-grid">
-      <a href="https://jxoj.github.io/Jxo" class="app-icon">
-        <div class="app-icon-circle">J</div>
-        <div class="app-icon-label">Account</div>
-      </a>
-      <a href="#" class="app-icon">
-        <div class="app-icon-circle" style="background:#ea4335">M</div>
-        <div class="app-icon-label">Mail</div>
-      </a>
-      <a href="#" class="app-icon">
-        <div class="app-icon-circle" style="background:#fbbc04">D</div>
-        <div class="app-icon-label">Drive</div>
-      </a>
-      <a href="#" class="app-icon">
-        <div class="app-icon-circle" style="background:#34a853">S</div>
-        <div class="app-icon-label">Sheets</div>
-      </a>
-      <a href="https://jxoj.github.io/Ozo" class="app-icon">
-        <div class="app-icon-circle" style="background:#8ab4f8">O</div>
-        <div class="app-icon-label">Ozo AI</div>
-      </a>
+    <div class="apps-grid" id="appsGrid">
+      <!-- Injected by loadApps() or fallback error message -->
     </div>
   </div>
 
@@ -557,35 +440,16 @@
     </div>
     
     <div class="current-user-card">
-      <div class="profile-btn" id="panelAvatar" style="width:48px;height:48px;font-size:24px;">J</div>
+      <div class="profile-btn" id="panelAvatar" style="width:48px;height:48px;"><img src="assets/jxo.png" alt="Profile"></div>
       <div class="current-user-info">
         <div class="current-user-name" id="panelName">User Name</div>
         <div class="current-user-email" id="panelEmail">user@example.com</div>
       </div>
-      <div class="acc-arrow">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
-      </div>
-    </div>
-
-    <div class="acc-action-list">
-      <div class="acc-action-item" id="addAccountBtn">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Add another account
-      </div>
-      <div class="acc-action-item">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        Manage accounts on this device
-      </div>
     </div>
 
     <button class="manage-jxo-btn" id="manageJxoBtn">
-      <span style="color:#4285f4">J</span>
       Manage your Jxo Account
     </button>
-
-    <div class="panel-footer">
-      <a href="#">Privacy Policy</a> • <a href="#">Terms of Service</a>
-    </div>
   </div>
 
   <!-- Main Area -->
@@ -594,9 +458,6 @@
     <div class="ntp-only">
       <div class="logo-container">
         <div class="jxo-logo">Jxo</div>
-        <div class="logo-share">
-          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
-        </div>
       </div>
     </div>
 
@@ -606,30 +467,16 @@
           <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </div>
         <input type="text" class="search-input" id="searchInput" placeholder="Ask Jxo" autocomplete="off">
-        <div class="icon">
-          <svg viewBox="0 0 24 24" style="stroke: #1a73e8"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-        </div>
-        <button class="ai-mode-btn" id="aiModeBtn">
-          <svg viewBox="0 0 24 24" style="stroke: #8ab4f8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-          AI Mode
-        </button>
+        <button class="ai-mode-btn" id="aiModeBtn">AI Mode</button>
       </div>
 
       <div class="ntp-only">
-        <div class="shortcuts-grid" id="shortcutsGrid">
-          <!-- Rendered via JS -->
-        </div>
+        <div class="shortcuts-grid" id="shortcutsGrid"></div>
       </div>
     </div>
 
     <!-- Results Area -->
     <div class="results-area" id="resultsArea">
-      <div class="tabs">
-        <div class="tab active">All</div>
-        <div class="tab">Images</div>
-        <div class="tab">Videos</div>
-        <div class="tab">News</div>
-      </div>
       <div class="loading" id="loading" style="display: none;">Searching Jxo...</div>
       <div id="resultsList"></div>
     </div>
@@ -637,7 +484,6 @@
   </div>
 
   <button class="customize-btn ntp-only" id="customizeBtn">
-    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
     Customize Jxo
   </button>
 
@@ -663,29 +509,6 @@
     </div>
   </div>
 
-  <!-- Mini AI Box (Ozo) -->
-  <div class="iframe-panel" id="iframePanel">
-    <div class="iframe-panel-header" id="iframeDragHandle">
-      <div class="ai-badge">
-        <div class="ai-badge-dot"></div>
-        <span class="ai-badge-label">AI</span>
-      </div>
-      <div class="iframe-panel-title" id="iframePanelTitle">Ozo</div>
-      <div class="iframe-panel-actions">
-        <button class="iframe-action-btn" id="openExternalBtn" title="Open in new tab">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-        </button>
-        <button class="iframe-action-btn" id="minimizeIframeBtn" title="Minimize">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-        <button class="iframe-action-btn" id="closeIframeBtn" title="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-    </div>
-    <iframe id="ozoIframe" src="about:blank" title="Ozo Search"></iframe>
-  </div>
-
   <script src="https://jxoj.github.io/Jxo/sdk.js"></script>
   <script>
     const APP_ID = "com.jxo.search";
@@ -696,34 +519,24 @@
     let shortcuts = [];
     let currentWallpaper = 'default';
 
-    // Wallpaper Presets
     const wallpapers = [
       { id: 'default', url: '', name: 'Default Green' },
-      { id: 'space', url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920', name: 'Space' },
-      { id: 'mountains', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920', name: 'Mountains' },
-      { id: 'ocean', url: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1920', name: 'Ocean' },
-      { id: 'forest', url: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=1920', name: 'Forest' },
-      { id: 'city', url: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920', name: 'City' },
-      { id: 'abstract', url: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=1920', name: 'Abstract' }
+      { id: 'space', url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920', name: 'Space' }
     ];
 
-    // UI Elements
     const accountArea = document.getElementById('accountArea');
     const accountPanel = document.getElementById('accountPanel');
     const appsPanel = document.getElementById('appsPanel');
+    const appsGrid = document.getElementById('appsGrid');
     const mainLayout = document.getElementById('mainLayout');
     const searchInput = document.getElementById('searchInput');
     const shortcutsGrid = document.getElementById('shortcutsGrid');
-    const resultsArea = document.getElementById('resultsArea');
     const resultsList = document.getElementById('resultsList');
     const loading = document.getElementById('loading');
-
-    // Modals
     const shortcutModal = document.getElementById('shortcutModal');
     const customizeModal = document.getElementById('customizeModal');
     const modalOverlay = document.getElementById('modalOverlay');
 
-    // Panels Toggles
     document.getElementById('appLauncherBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       appsPanel.classList.toggle('active');
@@ -735,10 +548,29 @@
       if (!accountPanel.contains(e.target) && !e.target.closest('#profileBtn')) accountPanel.classList.remove('active');
     });
 
-    // Initialize SDK
-    async function initializeApp() {
+    // Dynamic Apps Loading
+    async function loadApps() {
       try {
-        console.log('Initializing Jxo SDK...');
+        const res = await fetch('/assets/apps.json');
+        if (!res.ok) throw new Error('File not found');
+        const apps = await res.json();
+        
+        if (apps.length === 0) throw new Error('No apps');
+        
+        appsGrid.innerHTML = apps.map(app => `
+          <a href="${app.url}" class="app-icon">
+            <div class="app-icon-circle" style="background:${app.color || 'var(--primary-accent)'}">${app.initial || app.name.charAt(0)}</div>
+            <div class="app-icon-label">${app.name}</div>
+          </a>
+        `).join('');
+      } catch (err) {
+        appsGrid.innerHTML = '<div class="no-apps-msg">no apps available</div>';
+      }
+    }
+
+    async function initializeApp() {
+      await loadApps();
+      try {
         if(typeof Jxo !== 'undefined'){
             await Jxo.init(APP_ID, { rememberUser: true });
             currentUser = Jxo.getUser();
@@ -747,31 +579,22 @@
         if (currentUser) {
           await loadUserData();
         } else {
-          renderShortcuts(); // render defaults
+          renderShortcuts(); 
           applyWallpaper('default');
         }
       } catch (error) {
-        console.error('Failed to init Jxo:', error);
         updateUIForUser();
         renderShortcuts();
         applyWallpaper('default');
-      }
-
-      // Check URL param
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('q')) {
-        searchInput.value = urlParams.get('q');
-        performSearch(urlParams.get('q'));
       }
     }
 
     function updateUIForUser() {
       if (currentUser) {
-        const initial = (currentUser.displayName || currentUser.email).charAt(0).toUpperCase();
+        const photoUrl = currentUser.photoURL || 'assets/jxo.png';
+        accountArea.innerHTML = `<button class="profile-btn" id="profileBtn"><img src="${photoUrl}" alt="Profile"></button>`;
         
-        accountArea.innerHTML = `<button class="profile-btn" id="profileBtn">${currentUser.photoURL ? `<img src="${currentUser.photoURL}">` : initial}</button>`;
-        
-        document.getElementById('panelAvatar').innerHTML = currentUser.photoURL ? `<img src="${currentUser.photoURL}">` : initial;
+        document.getElementById('panelAvatar').innerHTML = `<img src="${photoUrl}" alt="Profile">`;
         document.getElementById('panelName').textContent = currentUser.displayName || "Jxo User";
         document.getElementById('panelEmail').textContent = currentUser.email;
         
@@ -782,7 +605,6 @@
         });
         
         document.getElementById('manageJxoBtn').addEventListener('click', () => { Jxo.openAccountManager(); });
-        document.getElementById('addAccountBtn').addEventListener('click', () => { Jxo.login(); });
       } else {
         accountArea.innerHTML = `<button class="sign-in-btn" id="loginBtn">Sign In</button>`;
         document.getElementById('loginBtn').addEventListener('click', () => { if(typeof Jxo !== 'undefined') Jxo.login(); });
@@ -793,10 +615,7 @@
       if (!Jxo.isAuthenticated()) return;
       try {
         const data = await Jxo.getAppData();
-        shortcuts = data.shortcuts || [
-          { name: 'Jxo', url: 'https://jxoj.github.io/Jxo' },
-          { name: 'Mail', url: 'https://jxoj.github.io/Mail' }
-        ];
+        shortcuts = data.shortcuts || [];
         currentWallpaper = data.wallpaper || 'default';
         
         renderShortcuts();
@@ -806,16 +625,9 @@
 
     async function saveUserData() {
       if (!Jxo.isAuthenticated()) return;
-      try { 
-        await Jxo.updateAppData({ 
-          shortcuts: shortcuts,
-          wallpaper: currentWallpaper 
-        }); 
-      } 
-      catch (error) { console.error(error); }
+      try { await Jxo.updateAppData({ shortcuts, wallpaper: currentWallpaper }); } catch (e) {}
     }
 
-    // --- Wallpaper System ---
     function applyWallpaper(idOrUrl) {
       const overlay = document.getElementById('backgroundOverlay');
       const wp = wallpapers.find(w => w.id === idOrUrl);
@@ -824,12 +636,10 @@
       if (finalUrl && finalUrl !== 'default') {
         overlay.style.backgroundImage = `url(${finalUrl})`;
         overlay.style.opacity = '1';
-        // When a wallpaper is active, make the base body color dark so it blends well behind the overlay
         document.body.style.background = '#0a0a0a';
       } else {
         overlay.style.backgroundImage = '';
         overlay.style.opacity = '0';
-        // Reset to original brand color when no wallpaper
         document.body.style.background = 'var(--bg-color)';
       }
     }
@@ -838,7 +648,6 @@
       const grid = document.getElementById('wallpaperGrid');
       grid.innerHTML = wallpapers.map(w => {
         const isActive = currentWallpaper === w.id || (w.id === 'default' && !wallpapers.find(x => x.id === currentWallpaper) && currentWallpaper === 'default');
-        
         return `
           <div class="wallpaper-option ${isActive ? 'active' : ''} ${w.id === 'default' ? 'default-wall' : ''}" 
                data-id="${w.id}" 
@@ -853,7 +662,6 @@
         option.addEventListener('click', (e) => {
           document.querySelectorAll('.wallpaper-option').forEach(o => o.classList.remove('active'));
           e.target.classList.add('active');
-          
           currentWallpaper = e.target.dataset.id;
           applyWallpaper(currentWallpaper);
           saveUserData();
@@ -861,7 +669,6 @@
       });
     }
 
-    // Customize Modal Events
     document.getElementById('customizeBtn').addEventListener('click', () => {
       renderWallpaperOptions();
       customizeModal.classList.add('active');
@@ -885,7 +692,6 @@
       modalOverlay.classList.remove('active');
     });
 
-    // --- Shortcuts System ---
     function renderShortcuts() {
       shortcutsGrid.innerHTML = '';
       shortcuts.forEach((sc, index) => {
@@ -903,14 +709,10 @@
         shortcutsGrid.appendChild(item);
       });
 
-      // Add "Add shortcut" button
       const addBtn = document.createElement('div');
       addBtn.className = 'shortcut-item';
-      addBtn.id = 'addShortcutBtn';
       addBtn.innerHTML = `
-        <div class="shortcut-icon-circle" style="background: rgba(20, 46, 35, 0.8);">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </div>
+        <div class="shortcut-icon-circle" style="background: rgba(20, 46, 35, 0.8);">+</div>
         <div class="shortcut-title">Add shortcut</div>
       `;
       addBtn.onclick = () => {
@@ -921,11 +723,9 @@
       };
       shortcutsGrid.appendChild(addBtn);
 
-      // Bind remove buttons
       document.querySelectorAll('.shortcut-remove').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault(); e.stopPropagation();
           shortcuts.splice(btn.dataset.idx, 1);
           renderShortcuts();
           saveUserData();
@@ -933,7 +733,6 @@
       });
     }
 
-    // Shortcut Modal Events
     document.getElementById('scCancel').onclick = () => {
       shortcutModal.classList.remove('active');
       modalOverlay.classList.remove('active');
@@ -952,17 +751,14 @@
       modalOverlay.classList.remove('active');
     };
 
-    // Close any modal on overlay click
     modalOverlay.addEventListener('click', () => {
       shortcutModal.classList.remove('active');
       customizeModal.classList.remove('active');
       modalOverlay.classList.remove('active');
     });
 
-    // Panel close
     document.getElementById('closeAccPanel').addEventListener('click', () => accountPanel.classList.remove('active'));
 
-    // --- Search System ---
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && e.target.value.trim()) {
         performSearch(e.target.value.trim());
@@ -972,20 +768,11 @@
     async function performSearch(query) {
       if (!query) return;
       mainLayout.classList.add('has-results');
-      
-      // Enforce dark solid background when results show, override wallpaper
       document.body.style.background = '#121212';
-      const overlay = document.getElementById('backgroundOverlay');
-      overlay.style.display = 'none';
+      document.getElementById('backgroundOverlay').style.display = 'none';
 
       resultsList.innerHTML = '';
       loading.style.display = 'block';
-      
-      const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
-      window.history.pushState({}, '', newUrl);
-
-      // Open AI Box
-      openIframePanel(query);
 
       try {
         const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
@@ -1002,78 +789,14 @@
             </div>
           `).join('');
         } else {
-          resultsList.innerHTML = '<div style="color:#e3e3e3">No results found for your query.</div>';
+          resultsList.innerHTML = '<div style="color:#e3e3e3">No results found.</div>';
         }
       } catch (err) {
         loading.style.display = 'none';
-        resultsList.innerHTML = '<div style="color:#ff6b6b">An error occurred while fetching results.</div>';
+        resultsList.innerHTML = '<div style="color:#ff6b6b">Error fetching results.</div>';
       }
     }
 
-    // --- Mini AI Box (Ozo) ---
-    const iframePanel = document.getElementById('iframePanel');
-    const ozoIframe = document.getElementById('ozoIframe');
-    const dragHandle = document.getElementById('iframeDragHandle');
-    let isMinimized = false;
-
-    function openIframePanel(query) {
-      const url = `https://jxoj.github.io/Ozo?jxosearch=${encodeURIComponent(query)}`;
-      document.getElementById('iframePanelTitle').textContent = query;
-      ozoIframe.src = url;
-      iframePanel.classList.add('open');
-      if (isMinimized) {
-        isMinimized = false;
-        iframePanel.classList.remove('minimized');
-      }
-    }
-
-    document.getElementById('closeIframeBtn').addEventListener('click', () => {
-      iframePanel.classList.remove('open');
-      setTimeout(() => { ozoIframe.src = 'about:blank'; }, 300);
-    });
-
-    document.getElementById('minimizeIframeBtn').addEventListener('click', () => {
-      isMinimized = !isMinimized;
-      iframePanel.classList.toggle('minimized', isMinimized);
-    });
-    
-    document.getElementById('aiModeBtn').addEventListener('click', () => {
-       const q = searchInput.value.trim();
-       if(q) {
-         performSearch(q);
-       }
-    });
-
-    // Drag handle
-    let dragState = null;
-    dragHandle.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.iframe-action-btn')) return;
-      const rect = iframePanel.getBoundingClientRect();
-      dragState = {
-        startX: e.clientX, startY: e.clientY,
-        origRight: window.innerWidth - rect.right,
-        origBottom: window.innerHeight - rect.bottom
-      };
-      document.body.style.userSelect = 'none';
-      ozoIframe.style.pointerEvents = 'none';
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-      if (!dragState) return;
-      let newRight = dragState.origRight - (e.clientX - dragState.startX);
-      let newBottom = dragState.origBottom - (e.clientY - dragState.startY);
-      iframePanel.style.right = Math.max(8, newRight) + 'px';
-      iframePanel.style.bottom = Math.max(8, newBottom) + 'px';
-    });
-    
-    document.addEventListener('mouseup', () => {
-      if (!dragState) return;
-      dragState = null;
-      document.body.style.userSelect = '';
-      ozoIframe.style.pointerEvents = '';
-    });
-
-    // Boot
     initializeApp();
   </script>
 </body>
