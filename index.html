@@ -3,840 +3,1210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
   <title>Jxo Search</title>
   <style>
     :root {
-      --bg-color: #1b3b32;
-      --surface-dark: #202124;
-      --surface-hover: rgba(255, 255, 255, 0.1);
-      --text-main: #e3e3e3;
-      --text-muted: #9aa0a6;
-      --search-bg: rgba(255, 255, 255, 0.96);
-      --primary-accent: #8ab4f8;
-      --panel-bg: #1e1e1e;
+      --bg: #000000;
+      --bg-2: #080808;
+      --surface: rgba(24,24,27,.86);
+      --surface-solid: #18181b;
+      --surface-hover: rgba(255,255,255,.08);
+      --text: #f5f5f5;
+      --muted: #a1a1aa;
+      --subtle: #71717a;
+      --line: rgba(255,255,255,.10);
+      --accent: #8ab4f8;
+      --search: #202124;
+      --search-border: rgba(255,255,255,.12);
+      --shadow: 0 20px 70px rgba(0,0,0,.40);
+      --radius: 28px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
     body {
-      background: var(--bg-color);
-      color: var(--text-main);
+      margin: 0;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
+      color: var(--text);
+      background: var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
       overflow-x: hidden;
-      transition: background 0.3s;
+      transition: background .35s ease;
     }
 
-    .background-overlay {
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .wallpaper {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
+      inset: 0;
+      z-index: -2;
+      background: var(--bg);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      z-index: 0;
-      transition: opacity 0.5s;
-      opacity: 0;
+      transition: background-image .35s ease, filter .35s ease;
     }
-
-    .background-overlay::after {
-      content: '';
+    .wallpaper::after {
+      content: "";
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(180deg, rgba(18, 18, 18, 0.6) 0%, rgba(18, 18, 18, 0.4) 50%, rgba(18, 18, 18, 0.9) 100%);
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.58));
+      pointer-events: none;
+    }
+    .scrim {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at 50% 25%, rgba(255,255,255,.045), transparent 38%),
+                  linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.30));
+      pointer-events: none;
     }
 
-    /* --- TOP BAR --- */
-    .top-bar {
-      position: absolute;
-      top: 0; right: 0;
+    .topbar {
+      height: 72px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      z-index: 50;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 18px;
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
     }
 
-    .icon-btn {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: transparent;
-      border: none;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .top-icon,
+    .avatar-btn,
+    .sign-in {
+      border: 0;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
-    .icon-btn:hover { background: var(--surface-hover); }
-    .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
-
-    .profile-btn {
-      width: 32px; height: 32px;
+    .top-icon {
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
+      display: grid;
+      place-items: center;
       background: transparent;
-      color: white;
-      border: none;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      transition: background .2s ease, transform .2s ease;
+    }
+    .top-icon:hover { background: var(--surface-hover); transform: translateY(-1px); }
+    .top-icon svg { width: 21px; height: 21px; fill: currentColor; }
+
+    .sign-in {
+      height: 40px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: #fff;
+      color: #111;
+      font-weight: 700;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+    .sign-in:hover { transform: translateY(-1px); opacity: .93; }
+
+    .avatar-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
       overflow: hidden;
+      background: #27272a;
+      padding: 0;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.12);
     }
-    .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .sign-in-btn {
-      background: var(--primary-accent);
-      color: #121212;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 24px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .sign-in-btn:hover { opacity: 0.9; }
-
-    /* --- MAIN CONTENT --- */
-    .content-wrapper {
-      position: relative;
-      z-index: 1;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 100px;
-      transition: all 0.4s ease;
+    .avatar-btn img,
+    .panel-avatar img {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .avatar-fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      background: linear-gradient(135deg,#3f3f46,#18181b);
     }
 
-    .content-wrapper.has-results {
-      padding-top: 20px;
-      align-items: flex-start;
-      padding-left: 30px;
-      background: rgba(18, 18, 18, 0.95);
+    .page {
       min-height: 100vh;
-    }
-
-    .ntp-only {
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 100%;
-      transition: opacity 0.3s;
+      padding: 17vh 20px 70px;
     }
-    .has-results .ntp-only { display: none; }
 
-    /* --- LOGO --- */
-    .logo-container {
+    .home {
+      width: min(100%, 860px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform .4s ease, opacity .3s ease;
+    }
+
+    .brand {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 32px;
+      margin-bottom: 34px;
     }
-
-    .jxo-logo-img {
-      max-width: 280px;
+    .brand img {
+      width: min(290px, 65vw);
       max-height: 110px;
-      width: auto;
-      height: auto;
       object-fit: contain;
-      filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.35));
+      filter: drop-shadow(0 12px 34px rgba(0,0,0,.35));
       user-select: none;
     }
 
-    /* --- SEARCH BAR --- */
-    .search-box-container {
-      width: 100%;
-      max-width: 680px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .search-wrap {
+      width: min(100%, 720px);
       position: relative;
-      padding: 0 16px;
-      transition: all 0.4s ease;
     }
-
     .search-box {
-      width: 100%;
-      height: 56px;
-      background: var(--search-bg);
-      backdrop-filter: blur(12px);
-      border-radius: 28px;
+      height: 62px;
       display: flex;
       align-items: center;
-      padding: 0 10px 0 20px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      gap: 10px;
+      padding: 0 9px 0 21px;
+      background: rgba(32,33,36,.94);
+      border: 1px solid var(--search-border);
+      border-radius: 31px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.24);
+      backdrop-filter: blur(16px);
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
-
     .search-box:focus-within {
-      background: #ffffff;
-      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(138, 180, 248, 0.4);
-      transform: translateY(-1px);
+      border-color: rgba(138,180,248,.42);
+      box-shadow: 0 12px 38px rgba(0,0,0,.32), 0 0 0 3px rgba(138,180,248,.10);
+      background: rgba(40,41,44,.98);
     }
 
     .search-icon {
-      color: #5f6368;
       width: 22px;
       height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      flex: 0 0 auto;
+      color: #9aa0a6;
     }
-    .search-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+    .search-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+    }
 
     .search-input {
+      min-width: 0;
       flex: 1;
-      border: none;
+      height: 100%;
+      border: 0;
+      outline: 0;
       background: transparent;
-      outline: none;
-      color: #1f1f1f;
-      font-size: 16px;
-      font-weight: 400;
-      padding: 0 14px;
+      color: #fff;
+      font-size: 17px;
     }
-    .search-input::placeholder { color: #757575; }
+    .search-input::placeholder { color: #a1a1aa; }
 
-    .ai-mode-btn {
-      background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
-      border: 1px solid rgba(138, 180, 248, 0.4);
-      border-radius: 20px;
-      padding: 8px 16px;
-      color: #1a73e8;
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex-shrink: 0;
-    }
-    .ai-mode-btn:hover {
-      background: linear-gradient(135deg, #d2e3fc 0%, #c2d7fa 100%);
-      transform: scale(1.02);
-      box-shadow: 0 2px 8px rgba(26, 115, 232, 0.25);
-    }
-    .ai-mode-btn svg { width: 14px; height: 14px; fill: currentColor; }
-
-    /* --- SHORTCUTS --- */
-    .shortcuts-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
-      max-width: 650px;
-      margin-top: 32px;
-    }
-
-    .shortcut-item {
-      width: 90px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 8px;
-      border-radius: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
-      position: relative;
-    }
-
-    .shortcut-item:hover { background: var(--surface-hover); }
-    .shortcut-item:hover .shortcut-remove { display: flex; }
-
-    .shortcut-icon-circle {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .shortcut-title {
-      font-size: 13px;
-      color: var(--text-main);
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    }
-
-    .shortcut-remove {
-      position: absolute;
-      top: 0; right: 8px;
-      width: 20px; height: 20px;
-      background: #333;
-      border-radius: 50%;
+    .clear-btn {
       display: none;
-      align-items: center; justify-content: center;
-      font-size: 12px; color: white;
-      z-index: 2;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      background: transparent;
+      color: #b4b4b8;
     }
+    .clear-btn:hover { background: rgba(255,255,255,.07); }
 
-    /* --- CUSTOMIZE BTN --- */
-    .customize-btn {
-      position: fixed;
-      bottom: 20px; right: 20px;
-      background: rgba(20, 46, 35, 0.75);
-      backdrop-filter: blur(8px);
-      color: var(--text-main);
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 10px 18px;
-      border-radius: 24px;
-      font-size: 13px;
-      font-weight: 500;
-      display: flex;
+    .ai-btn {
+      height: 42px;
+      border: 1px solid rgba(138,180,248,.22);
+      border-radius: 22px;
+      padding: 0 15px;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
       cursor: pointer;
-      z-index: 10;
-      transition: background 0.2s, transform 0.2s;
+      background: linear-gradient(135deg, rgba(232,240,254,.96), rgba(210,227,252,.96));
+      color: #174ea6;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
     }
-    .customize-btn:hover { background: rgba(20, 46, 35, 0.95); transform: translateY(-1px); }
+    .ai-btn svg { width: 15px; height: 15px; fill: currentColor; }
 
-    /* --- PANELS & MODALS --- */
-    .panel {
-      position: absolute;
-      top: 60px; right: 16px;
-      background: var(--panel-bg);
-      border-radius: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      z-index: 1000;
-      display: none;
+    .shortcuts {
+      width: 100%;
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .shortcut {
+      width: 96px;
+      min-height: 100px;
+      border: 0;
+      background: transparent;
+      border-radius: 17px;
+      padding: 12px 8px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+      position: relative;
+      transition: background .18s ease, transform .18s ease;
+    }
+    .shortcut:hover { background: rgba(255,255,255,.065); transform: translateY(-2px); }
+
+    .shortcut-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(25,25,27,.82);
+      border: 1px solid rgba(255,255,255,.09);
+      box-shadow: 0 7px 20px rgba(0,0,0,.18);
+      font-weight: 800;
+      font-size: 19px;
     }
-    .panel.active { display: block; }
+    .shortcut-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .shortcut-name {
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+      font-size: 12px;
+      color: #e4e4e7;
+    }
+    .shortcut-remove {
+      position: absolute;
+      right: 7px;
+      top: 5px;
+      width: 22px;
+      height: 22px;
+      border: 0;
+      border-radius: 50%;
+      background: #27272a;
+      color: #fff;
+      display: none;
+      place-items: center;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .shortcut:hover .shortcut-remove { display: grid; }
 
-    .account-panel { width: 360px; padding: 16px; }
-    .panel-header {
-      text-align: center; font-size: 12px; color: var(--text-muted);
-      margin-bottom: 12px; position: relative;
+    .customize {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 50;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(24,24,27,.82);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      color: #f4f4f5;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 25px rgba(0,0,0,.18);
     }
-    .panel-close {
-      position: absolute; right: 0; top: -4px;
-      background: none; border: none; color: var(--text-main);
-      font-size: 18px; cursor: pointer; padding: 4px;
+    .customize:hover { background: rgba(39,39,42,.95); }
+
+    .results-view {
+      display: none;
+      width: min(100%, 900px);
+      align-self: flex-start;
+      padding: 92px 0 60px 6vw;
     }
-    
-    .current-user-card {
-      background: #121212;
-      border-radius: 20px;
-      padding: 16px;
+    body.results .page {
+      align-items: flex-start;
+      padding: 0;
+      min-height: 100vh;
+    }
+    body.results .home {
+      display: none;
+    }
+    body.results .results-view { display: block; }
+
+    .results-search {
+      width: min(100%, 720px);
+      margin-bottom: 34px;
+    }
+    .results-toolbar {
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 13px;
     }
-    .current-user-info { flex: 1; overflow: hidden; }
-    .current-user-name { font-weight: 500; font-size: 15px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .current-user-email { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .manage-jxo-btn {
-      display: block; width: 100%; text-align: center;
-      background: #121212; padding: 12px; border-radius: 24px;
-      margin-top: 8px; font-size: 14px; font-weight: 500;
-      cursor: pointer; border: none; color: var(--text-main);
-      transition: background 0.2s;
+    .result-item {
+      max-width: 730px;
+      margin: 0 0 29px;
     }
-    .manage-jxo-btn:hover { background: #2a2a2a; }
-
-    /* App Launcher Panel */
-    .apps-panel { width: 320px; padding: 20px; }
-    .apps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .no-apps-msg {
-      grid-column: 1 / -1;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 14px;
-      padding: 20px 0;
+    .result-source {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #c7c7cc;
+      font-size: 13px;
+      margin-bottom: 5px;
     }
-    .app-icon {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      padding: 12px 8px; border-radius: 16px; cursor: pointer; text-decoration: none;
-      transition: background 0.2s;
-    }
-    .app-icon:hover { background: rgba(255, 255, 255, 0.08); }
-    .app-icon-circle {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--primary-accent);
-      display: flex; align-items: center; justify-content: center;
-      color: #121212; font-weight: bold; font-size: 20px;
+    .source-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      background: #27272a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
     }
-    .app-icon-circle img { width: 100%; height: 100%; object-fit: cover; }
-    .app-icon:hover .app-icon-circle { transform: scale(1.08); }
-    .app-icon-label { font-size: 12px; color: var(--text-main); text-align: center; }
-
-    /* Modals */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1500; display: none; }
-    .modal-overlay.active { display: block; }
-    .custom-modal {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: var(--panel-bg); padding: 24px; border-radius: 24px;
-      z-index: 2000; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      display: none; width: 340px; border: 1px solid rgba(255, 255, 255, 0.08);
+    .source-dot img { width: 100%; height: 100%; object-fit: cover; }
+    .result-title {
+      display: inline-block;
+      color: #8ab4f8;
+      text-decoration: none;
+      font-size: 21px;
+      line-height: 1.3;
+      margin-bottom: 5px;
     }
-    .custom-modal.active { display: block; }
-    .custom-modal h3 { margin-bottom: 16px; font-size: 16px; }
-    .modal-input { width: 100%; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 12px; color: white; margin-bottom: 12px; outline: none; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-    .modal-btn { padding: 8px 16px; border-radius: 16px; border: none; cursor: pointer; font-weight: 500; font-size: 13px; }
-    .modal-btn.cancel { background: transparent; color: var(--primary-accent); }
-    .modal-btn.save { background: var(--primary-accent); color: #121212; }
-
-    #customizeModal { width: 480px; max-width: 90vw; }
-    .wallpaper-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; max-height: 280px; overflow-y: auto;
-    }
-    .wallpaper-option {
-      aspect-ratio: 16/9; border-radius: 12px; cursor: pointer; border: 3px solid transparent; background-size: cover; background-position: center; transition: all 0.2s;
-    }
-    .wallpaper-option:hover { transform: scale(1.03); border-color: rgba(138, 180, 248, 0.5); }
-    .wallpaper-option.active { border-color: var(--primary-accent); box-shadow: 0 0 0 2px var(--primary-accent); }
-    .wallpaper-option.default-wall {
-      background: var(--bg-color); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 13px; font-weight: 500;
-    }
-
-    /* --- SEARCH RESULTS VIEW --- */
-    .results-area { width: 100%; max-width: 700px; display: none; position: relative; z-index: 2; }
-    .has-results .results-area { display: block; }
-    .has-results .search-box-container { margin-bottom: 30px; padding: 0; }
-    .has-results .search-box { background: #303134; border: 1px solid #3c4043; } 
-    .has-results .search-input { color: #e3e3e3; }
-    
-    .result-item { margin-bottom: 24px; }
-    .result-url { color: #9aa0a6; font-size: 12px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-    .result-title { color: #8ab4f8; font-size: 20px; font-weight: 400; margin-bottom: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
     .result-title:hover { text-decoration: underline; }
-    .result-desc { color: #bdc1c6; font-size: 14px; line-height: 1.6; }
-    
-    .loading { color: #8ab4f8; margin-top: 20px; }
+    .result-url { color: #a1a1aa; font-size: 12px; margin-bottom: 4px; overflow-wrap: anywhere; }
+    .result-desc { color: #c4c4c9; line-height: 1.55; font-size: 14px; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0,0,0,.56);
+      backdrop-filter: blur(5px);
+      display: none;
+    }
+    .overlay.open { display: block; }
+
+    .panel {
+      position: fixed;
+      top: 64px;
+      right: 16px;
+      z-index: 700;
+      width: 360px;
+      max-width: calc(100vw - 28px);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      background: rgba(24,24,27,.97);
+      box-shadow: var(--shadow);
+      display: none;
+      overflow: hidden;
+    }
+    .panel.open { display: block; }
+
+    .panel-inner { padding: 16px; }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #a1a1aa;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .close-x {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      color: #e4e4e7;
+      font-size: 20px;
+    }
+    .close-x:hover { background: rgba(255,255,255,.08); }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 14px;
+      border-radius: 17px;
+      background: #111113;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .panel-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #27272a;
+      flex: 0 0 auto;
+    }
+    .user-meta { min-width: 0; }
+    .user-name { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-email { margin-top: 3px; color: #a1a1aa; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .panel-action {
+      width: 100%;
+      margin-top: 9px;
+      height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: #27272a;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .panel-action:hover { background: #3f3f46; }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .app-item {
+      padding: 11px 6px;
+      border-radius: 15px;
+      text-decoration: none;
+      color: inherit;
+      text-align: center;
+      transition: background .18s ease;
+    }
+    .app-item:hover { background: rgba(255,255,255,.07); }
+    .app-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 8px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      font-weight: 800;
+      background: #27272a;
+    }
+    .app-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .app-label { font-size: 12px; color: #e4e4e7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .modal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 800;
+      width: min(560px, calc(100vw - 28px));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 24px;
+      background: rgba(24,24,27,.98);
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+      display: none;
+      overflow: hidden;
+    }
+    .modal.open { display: block; }
+    .modal-head {
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .modal-head h2 { margin: 0; font-size: 17px; }
+    .modal-body { padding: 18px 20px 20px; }
+    .modal-sub { margin: 0 0 14px; color: #a1a1aa; font-size: 12px; line-height: 1.5; }
+
+    .wallpaper-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+    .wall {
+      min-height: 92px;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      background: #09090b;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform .17s ease, border-color .17s ease;
+    }
+    .wall:hover { transform: scale(1.015); }
+    .wall.active { border-color: #8ab4f8; }
+    .wall span {
+      position: absolute;
+      left: 9px;
+      bottom: 8px;
+      padding: 4px 7px;
+      border-radius: 7px;
+      background: rgba(0,0,0,.54);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .input {
+      width: 100%;
+      height: 44px;
+      border: 1px solid #3f3f46;
+      outline: none;
+      border-radius: 12px;
+      background: #111113;
+      color: #fff;
+      padding: 0 13px;
+      margin-top: 14px;
+    }
+    .input:focus { border-color: rgba(138,180,248,.65); }
+
+    .modal-foot {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .modal-btn {
+      height: 40px;
+      border-radius: 999px;
+      padding: 0 15px;
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .modal-btn.secondary { background: transparent; color: #8ab4f8; }
+    .modal-btn.primary { background: #8ab4f8; color: #101010; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translate(-50%, 12px);
+      z-index: 1000;
+      background: #27272a;
+      color: #fff;
+      padding: 11px 14px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      font-size: 13px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    @media (max-width: 720px) {
+      .page { padding-top: 15vh; }
+      .brand img { width: 230px; }
+      .search-box { height: 58px; }
+      .ai-btn { padding: 0 12px; }
+      .ai-btn span { display: none; }
+      .shortcuts { gap: 4px; }
+      .shortcut { width: 84px; }
+      .results-view { padding: 88px 20px 50px; }
+      .results-search { width: 100%; }
+      .wallpaper-grid { grid-template-columns: repeat(2,1fr); }
+    }
   </style>
 </head>
 <body>
-  <div class="background-overlay" id="backgroundOverlay"></div>
-  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="wallpaper" id="wallpaper"></div>
+  <div class="scrim"></div>
 
-  <!-- Top Navigation Bar -->
-  <div class="top-bar">
-    <button class="icon-btn" id="appLauncherBtn" title="Jxo apps">
-      <svg viewBox="0 0 24 24"><path d="M12 16c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm-6 12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm12 12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"></path></svg>
+  <header class="topbar">
+    <button class="top-icon" id="appsBtn" title="Jxo apps" aria-label="Jxo apps">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 5h3v3H5V5zm5.5 0h3v3h-3V5zM16 5h3v3h-3V5zM5 10.5h3v3H5v-3zm5.5 0h3v3h-3v-3zm5.5 0h3v3h-3v-3zM5 16h3v3H5v-3zm5.5 0h3v3h-3v-3zm5.5 0h3v3h-3v-3z"/>
+      </svg>
     </button>
-    <div id="accountArea">
-      <button class="sign-in-btn" id="loginBtn">Sign In</button>
+    <div id="accountArea"></div>
+  </header>
+
+  <div class="panel" id="appsPanel">
+    <div class="panel-inner">
+      <div class="panel-title">Jxo apps <button class="close-x" data-close="appsPanel">&times;</button></div>
+      <div class="apps-grid" id="appsGrid"></div>
     </div>
   </div>
 
-  <!-- Apps Launcher Panel -->
-  <div class="panel apps-panel" id="appsPanel">
-    <div class="apps-grid" id="appsGrid"></div>
-  </div>
-
-  <!-- Account Management Panel -->
-  <div class="panel account-panel" id="accountPanel">
-    <div class="panel-header">
-      Managed by Jxo Network
-      <button class="panel-close" id="closeAccPanel">&times;</button>
-    </div>
-    
-    <div class="current-user-card">
-      <div class="profile-btn" id="panelAvatar" style="width:48px;height:48px;"><img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Profile"></div>
-      <div class="current-user-info">
-        <div class="current-user-name" id="panelName">User Name</div>
-        <div class="current-user-email" id="panelEmail">user@example.com</div>
-      </div>
-    </div>
-
-    <button class="manage-jxo-btn" id="manageJxoBtn">
-      Manage your Jxo Account
-    </button>
-  </div>
-
-  <!-- Main Area -->
-  <div class="content-wrapper" id="mainLayout">
-    
-    <div class="ntp-only">
-      <div class="logo-container">
-        <img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Jxo Logo" class="jxo-logo-img">
-      </div>
-    </div>
-
-    <div class="search-box-container">
-      <div class="search-box">
-        <div class="search-icon">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+  <div class="panel" id="accountPanel">
+    <div class="panel-inner">
+      <div class="panel-title">Jxo Account <button class="close-x" data-close="accountPanel">&times;</button></div>
+      <div class="user-card">
+        <div class="panel-avatar" id="panelAvatar"></div>
+        <div class="user-meta">
+          <div class="user-name" id="panelName">Jxo User</div>
+          <div class="user-email" id="panelEmail"></div>
         </div>
-        <input type="text" class="search-input" id="searchInput" placeholder="Search Jxo or type a URL..." autocomplete="off">
-        <button class="ai-mode-btn" id="aiModeBtn">
-          <svg viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
-          <span>AI Mode</span>
-        </button>
       </div>
-
-      <div class="ntp-only">
-        <div class="shortcuts-grid" id="shortcutsGrid"></div>
-      </div>
+      <button class="panel-action" id="manageBtn">Manage your Jxo Account</button>
     </div>
+  </div>
 
-    <!-- Results Area -->
-    <div class="results-area" id="resultsArea">
-      <div class="loading" id="loading" style="display: none;">Searching Jxo...</div>
+  <main class="page">
+    <section class="home" id="home">
+      <div class="brand">
+        <img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Jxo">
+      </div>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <div class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"></circle><path d="m16.5 16.5 4.2 4.2"></path></svg>
+          </div>
+          <input id="searchInput" class="search-input" type="search" placeholder="Search Jxo or type a URL" autocomplete="off" spellcheck="false">
+          <button id="clearBtn" class="clear-btn" aria-label="Clear search">&times;</button>
+          <button id="aiBtn" class="ai-btn" type="button" title="AI Mode">
+            <svg viewBox="0 0 24 24"><path d="M12 2.4 14.4 9.6 21.6 12l-7.2 2.4L12 21.6 9.6 14.4 2.4 12l7.2-2.4L12 2.4z"></path></svg>
+            <span>AI Mode</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="shortcuts" id="shortcuts"></div>
+    </section>
+
+    <section class="results-view" id="resultsView">
+      <div class="results-search">
+        <div class="search-box">
+          <div class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"></circle><path d="m16.5 16.5 4.2 4.2"></path></svg>
+          </div>
+          <input id="resultsSearchInput" class="search-input" type="search" placeholder="Search" autocomplete="off" spellcheck="false">
+          <button id="resultsClearBtn" class="clear-btn" aria-label="Clear search">&times;</button>
+        </div>
+      </div>
+      <div class="results-toolbar" id="resultsToolbar">Results</div>
       <div id="resultsList"></div>
+    </section>
+  </main>
+
+  <button class="customize" id="customizeBtn">Customize</button>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="modal" id="wallpaperModal">
+    <div class="modal-head">
+      <h2>Customize background</h2>
+      <button class="close-x" data-close="wallpaperModal">&times;</button>
     </div>
-
-  </div>
-
-  <button class="customize-btn ntp-only" id="customizeBtn">
-    Customize Jxo
-  </button>
-
-  <!-- Add Shortcut Modal -->
-  <div class="custom-modal" id="shortcutModal">
-    <h3>Add shortcut</h3>
-    <input type="text" class="modal-input" id="scName" placeholder="Name">
-    <input type="text" class="modal-input" id="scUrl" placeholder="URL">
-    <div class="modal-actions">
-      <button class="modal-btn cancel" id="scCancel">Cancel</button>
-      <button class="modal-btn save" id="scSave">Done</button>
-    </div>
-  </div>
-
-  <!-- Customize Background Modal -->
-  <div class="custom-modal" id="customizeModal">
-    <h3>Customize background</h3>
-    <div class="wallpaper-grid" id="wallpaperGrid"></div>
-    <input type="text" class="modal-input" id="customWallInput" placeholder="Paste custom image URL...">
-    <div class="modal-actions">
-      <button class="modal-btn cancel" id="custCancel">Close</button>
-      <button class="modal-btn save" id="custSave">Apply Custom URL</button>
+    <div class="modal-body">
+      <p class="modal-sub">Your selected background is saved in this browser and, when signed in, to your Jxo app account.</p>
+      <div class="wallpaper-grid" id="wallpaperGrid"></div>
+      <input id="customWallpaperInput" class="input" placeholder="Paste a custom image URL">
+      <div class="modal-foot">
+        <button class="modal-btn secondary" id="cancelWallpaper">Cancel</button>
+        <button class="modal-btn primary" id="applyCustomWallpaper">Use URL</button>
+      </div>
     </div>
   </div>
+
+  <div class="modal" id="shortcutModal">
+    <div class="modal-head">
+      <h2>Add shortcut</h2>
+      <button class="close-x" data-close="shortcutModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input id="shortcutName" class="input" style="margin-top:0" placeholder="Name">
+      <input id="shortcutUrl" class="input" placeholder="https://example.com">
+      <div class="modal-foot">
+        <button class="modal-btn secondary" id="cancelShortcut">Cancel</button>
+        <button class="modal-btn primary" id="saveShortcut">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 
   <script src="https://jxoj.github.io/Jxo/sdk.js"></script>
   <script>
+    "use strict";
+
     const APP_ID = "com.jxo.search";
+    const STORAGE_KEY = "jxo-search-settings-v2";
+    const SHORTCUTS_KEY = "jxo-search-shortcuts-v2";
+
+    // Keep the existing Google Custom Search configuration used by this page.
     const GOOGLE_API_KEY = "AIzaSyB55B9TOOSy1IcIr4AO0ibpqilV9Hpw4P4";
     const GOOGLE_CX = "d4ae4a6121f9c4d65";
-    
-    let currentUser = null;
-    let shortcuts = [];
-    let currentWallpaper = 'default';
 
     const wallpapers = [
-      { id: 'default', url: '', name: 'Default Green' },
-      { id: 'space', url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920', name: 'Space' }
+      { id: "default", name: "Black", url: "" },
+      { id: "midnight", name: "Midnight", url: "linear-gradient(135deg,#020617,#0f172a 52%,#111827)" },
+      { id: "ocean", name: "Ocean", url: "linear-gradient(135deg,#00111c,#003b5c 48%,#07111f)" },
+      { id: "violet", name: "Violet", url: "linear-gradient(135deg,#12051f,#32105b 52%,#0b1020)" },
+      { id: "ember", name: "Ember", url: "linear-gradient(135deg,#160806,#4a160d 50%,#120d0a)" },
+      { id: "aurora", name: "Aurora", url: "linear-gradient(135deg,#031b18,#0d4f4a 42%,#25124f 100%)" },
+      { id: "space", name: "Space", url: "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=1920&q=85" },
+      { id: "mountains", name: "Mountains", url: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1920&q=85" },
+      { id: "night-city", name: "Night City", url: "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1920&q=85" }
     ];
 
-    const accountArea = document.getElementById('accountArea');
-    const accountPanel = document.getElementById('accountPanel');
-    const appsPanel = document.getElementById('appsPanel');
-    const appsGrid = document.getElementById('appsGrid');
-    const mainLayout = document.getElementById('mainLayout');
-    const searchInput = document.getElementById('searchInput');
-    const shortcutsGrid = document.getElementById('shortcutsGrid');
-    const resultsList = document.getElementById('resultsList');
-    const loading = document.getElementById('loading');
-    const shortcutModal = document.getElementById('shortcutModal');
-    const customizeModal = document.getElementById('customizeModal');
-    const modalOverlay = document.getElementById('modalOverlay');
+    let currentUser = null;
+    let appData = {};
+    let shortcuts = [];
+    let currentWallpaper = "default";
 
-    document.getElementById('appLauncherBtn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      appsPanel.classList.toggle('active');
-      accountPanel.classList.remove('active');
-    });
+    const $ = id => document.getElementById(id);
+    const wallpaperEl = $("wallpaper");
+    const overlay = $("overlay");
 
-    document.addEventListener('click', (e) => {
-      if (!appsPanel.contains(e.target) && e.target.id !== 'appLauncherBtn') appsPanel.classList.remove('active');
-      if (!accountPanel.contains(e.target) && !e.target.closest('#profileBtn')) accountPanel.classList.remove('active');
-    });
-
-    // Dynamic Apps Loading from assets/apps.json
-    async function loadApps() {
-      try {
-        const res = await fetch('assets/apps.json');
-        if (!res.ok) throw new Error('File not found');
-        const apps = await res.json();
-        
-        if (!Array.isArray(apps) || apps.length === 0) throw new Error('No apps');
-        
-        appsGrid.innerHTML = apps.map(app => {
-          const hasIcon = app.icon && app.icon.trim() !== '';
-          const iconContent = hasIcon 
-            ? `<img src="${app.icon}" alt="${app.name}">` 
-            : (app.initial || app.name.charAt(0).toUpperCase());
-          const bgStyle = hasIcon ? 'background: transparent;' : `background:${app.color || 'var(--primary-accent)'};`;
-
-          return `
-            <a href="${app.url || '#'}" class="app-icon" target="_blank" rel="noopener">
-              <div class="app-icon-circle" style="${bgStyle}">
-                ${iconContent}
-              </div>
-              <div class="app-icon-label">${app.name}</div>
-            </a>
-          `;
-        }).join('');
-      } catch (err) {
-        appsGrid.innerHTML = '<div class="no-apps-msg">No apps available</div>';
-      }
+    function safeText(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    async function initializeApp() {
-      await loadApps();
+    function loadLocalSettings() {
       try {
-        if(typeof Jxo !== 'undefined'){
-            await Jxo.init(APP_ID, { rememberUser: true });
-            currentUser = Jxo.getUser();
-        }
-        updateUIForUser();
-        if (currentUser) {
-          await loadUserData();
-        } else {
-          renderShortcuts(); 
-          applyWallpaper('default');
-        }
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        currentWallpaper = saved.wallpaper || "default";
+        const localShortcuts = JSON.parse(localStorage.getItem(SHORTCUTS_KEY) || "[]");
+        if (Array.isArray(localShortcuts)) shortcuts = localShortcuts;
+      } catch {
+        currentWallpaper = "default";
+        shortcuts = [];
+      }
+      applyWallpaper(currentWallpaper);
+    }
+
+    function saveLocalSettings() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          wallpaper: currentWallpaper
+        }));
+        localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(shortcuts));
       } catch (error) {
-        updateUIForUser();
-        renderShortcuts();
-        applyWallpaper('default');
+        console.warn("Unable to save local settings:", error);
       }
     }
 
-    function updateUIForUser() {
-      if (currentUser) {
-        const photoUrl = currentUser.photoURL || 'https://jxoj.github.io/Jxo/assets/jxo.png';
-        accountArea.innerHTML = `<button class="profile-btn" id="profileBtn"><img src="${photoUrl}" alt="Profile"></button>`;
-        
-        document.getElementById('panelAvatar').innerHTML = `<img src="${photoUrl}" alt="Profile">`;
-        document.getElementById('panelName').textContent = currentUser.displayName || "Jxo User";
-        document.getElementById('panelEmail').textContent = currentUser.email;
-        
-        document.getElementById('profileBtn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          accountPanel.classList.toggle('active');
-          appsPanel.classList.remove('active');
-        });
-        
-        document.getElementById('manageJxoBtn').addEventListener('click', () => { Jxo.openAccountManager(); });
-      } else {
-        accountArea.innerHTML = `<button class="sign-in-btn" id="loginBtn">Sign In</button>`;
-        document.getElementById('loginBtn').addEventListener('click', () => { if(typeof Jxo !== 'undefined') Jxo.login(); });
-      }
-    }
+    async function saveJxoData() {
+      if (!currentUser || typeof Jxo === "undefined" || !Jxo.isAuthenticated()) return;
 
-    async function loadUserData() {
-      if (!Jxo.isAuthenticated()) return;
       try {
-        const data = await Jxo.getAppData();
-        shortcuts = data.shortcuts || [];
-        currentWallpaper = data.wallpaper || 'default';
-        
-        renderShortcuts();
-        applyWallpaper(currentWallpaper);
-      } catch (error) { console.error(error); }
+        await Jxo.updateAppData({
+          ...appData,
+          wallpaper: currentWallpaper,
+          shortcuts
+        });
+      } catch (error) {
+        console.warn("Jxo app data save failed:", error);
+      }
     }
 
-    async function saveUserData() {
-      if (!Jxo.isAuthenticated()) return;
-      try { await Jxo.updateAppData({ shortcuts, wallpaper: currentWallpaper }); } catch (e) {}
+    async function syncSettings() {
+      saveLocalSettings();
+      await saveJxoData();
+    }
+
+    function getWallpaper(idOrUrl) {
+      return wallpapers.find(w => w.id === idOrUrl) || null;
     }
 
     function applyWallpaper(idOrUrl) {
-      const overlay = document.getElementById('backgroundOverlay');
-      const wp = wallpapers.find(w => w.id === idOrUrl);
-      let finalUrl = wp ? wp.url : idOrUrl;
+      const builtIn = getWallpaper(idOrUrl);
 
-      if (finalUrl && finalUrl !== 'default') {
-        overlay.style.backgroundImage = `url(${finalUrl})`;
-        overlay.style.opacity = '1';
-        document.body.style.background = '#0a0a0a';
+      if (builtIn) {
+        currentWallpaper = builtIn.id;
+        if (!builtIn.url) {
+          wallpaperEl.style.background = "#000";
+        } else if (builtIn.url.startsWith("linear-gradient")) {
+          wallpaperEl.style.background = builtIn.url;
+        } else {
+          wallpaperEl.style.backgroundImage = `url("${builtIn.url}")`;
+          wallpaperEl.style.backgroundColor = "#000";
+        }
+      } else if (typeof idOrUrl === "string" && idOrUrl.trim()) {
+        currentWallpaper = idOrUrl.trim();
+        wallpaperEl.style.backgroundImage = `url("${idOrUrl.replaceAll('"', '%22')}")`;
+        wallpaperEl.style.backgroundColor = "#000";
       } else {
-        overlay.style.backgroundImage = '';
-        overlay.style.opacity = '0';
-        document.body.style.background = 'var(--bg-color)';
+        currentWallpaper = "default";
+        wallpaperEl.style.background = "#000";
       }
+    }
+
+    function avatarMarkup(user, extraClass = "") {
+      const fallback = safeText((user?.displayName || user?.email || "J").trim().charAt(0).toUpperCase() || "J");
+      const photo = user?.photoURL;
+      if (!photo) return `<div class="avatar-fallback ${extraClass}">${fallback}</div>`;
+      return `<img class="${extraClass}" src="${safeText(photo)}" alt="Profile" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="avatar-fallback" style="display:none">${fallback}</span>`;
+    }
+
+    function updateAccountUI() {
+      const accountArea = $("accountArea");
+
+      if (!currentUser) {
+        accountArea.innerHTML = '<button class="sign-in" id="loginBtn">Sign in</button>';
+        $("loginBtn").addEventListener("click", () => {
+          if (typeof Jxo !== "undefined") Jxo.login();
+        });
+        return;
+      }
+
+      accountArea.innerHTML = `
+        <button class="avatar-btn" id="profileBtn" aria-label="Jxo account">
+          ${avatarMarkup(currentUser)}
+        </button>
+      `;
+
+      $("panelAvatar").innerHTML = avatarMarkup(currentUser);
+      $("panelName").textContent = currentUser.displayName || "Jxo User";
+      $("panelEmail").textContent = currentUser.email || "";
+
+      $("profileBtn").addEventListener("click", e => {
+        e.stopPropagation();
+        $("accountPanel").classList.toggle("open");
+        $("appsPanel").classList.remove("open");
+      });
+    }
+
+    async function loadJxoAccount() {
+      if (typeof Jxo === "undefined") return;
+
+      try {
+        // Current official SDK accepts the app ID as the init argument.
+        await Jxo.init(APP_ID);
+        currentUser = Jxo.getUser();
+
+        if (currentUser && Jxo.isAuthenticated()) {
+          const remote = await Jxo.getAppData();
+          if (remote && typeof remote === "object") {
+            appData = remote;
+            if (typeof remote.wallpaper === "string" && remote.wallpaper.trim()) {
+              currentWallpaper = remote.wallpaper;
+            }
+            if (Array.isArray(remote.shortcuts)) {
+              shortcuts = remote.shortcuts;
+            }
+            saveLocalSettings();
+            applyWallpaper(currentWallpaper);
+          }
+        }
+      } catch (error) {
+        console.warn("Jxo initialization failed:", error);
+      }
+
+      updateAccountUI();
+      renderShortcuts();
+    }
+
+    async function loadApps() {
+      try {
+        const response = await fetch("assets/apps.json", { cache: "no-store" });
+        if (!response.ok) throw new Error("apps.json unavailable");
+        const apps = await response.json();
+
+        if (!Array.isArray(apps) || !apps.length) throw new Error("No apps");
+
+        $("appsGrid").innerHTML = apps.map(app => {
+          const name = safeText(app.name || "App");
+          const url = safeText(app.url || "#");
+          const icon = app.icon ? `<img src="${safeText(app.icon)}" alt="">` : safeText(app.initial || (app.name || "A").charAt(0).toUpperCase());
+          const color = safeText(app.color || "#27272a");
+          return `
+            <a class="app-item" href="${url}" target="_blank" rel="noopener">
+              <div class="app-icon" style="background:${color}">${icon}</div>
+              <div class="app-label">${name}</div>
+            </a>
+          `;
+        }).join("");
+      } catch {
+        $("appsGrid").innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#a1a1aa;font-size:13px;padding:18px 0">No apps available</div>';
+      }
+    }
+
+    function renderShortcuts() {
+      const grid = $("shortcuts");
+      grid.innerHTML = "";
+
+      shortcuts.forEach((shortcut, index) => {
+        const a = document.createElement("a");
+        a.className = "shortcut";
+        a.href = shortcut.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.innerHTML = `
+          <button class="shortcut-remove" type="button" title="Remove" data-index="${index}">&times;</button>
+          <div class="shortcut-icon">${safeText((shortcut.name || "S").charAt(0).toUpperCase())}</div>
+          <div class="shortcut-name">${safeText(shortcut.name || "Shortcut")}</div>
+        `;
+        grid.appendChild(a);
+      });
+
+      const add = document.createElement("button");
+      add.className = "shortcut";
+      add.type = "button";
+      add.innerHTML = `
+        <div class="shortcut-icon" style="font-size:25px;color:#d4d4d8">+</div>
+        <div class="shortcut-name">Add shortcut</div>
+      `;
+      add.addEventListener("click", () => openModal("shortcutModal"));
+      grid.appendChild(add);
+
+      grid.querySelectorAll(".shortcut-remove").forEach(btn => {
+        btn.addEventListener("click", async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          shortcuts.splice(Number(btn.dataset.index), 1);
+          renderShortcuts();
+          await syncSettings();
+        });
+      });
     }
 
     function renderWallpaperOptions() {
-      const grid = document.getElementById('wallpaperGrid');
-      grid.innerHTML = wallpapers.map(w => {
-        const isActive = currentWallpaper === w.id || (w.id === 'default' && !wallpapers.find(x => x.id === currentWallpaper) && currentWallpaper === 'default');
-        return `
-          <div class="wallpaper-option ${isActive ? 'active' : ''} ${w.id === 'default' ? 'default-wall' : ''}" 
-               data-id="${w.id}" 
-               style="${w.url ? `background-image: url(${w.url})` : ''}"
-               title="${w.name}">
-               ${w.id === 'default' ? 'Default' : ''}
-          </div>
-        `;
-      }).join('');
-      
-      document.querySelectorAll('.wallpaper-option').forEach(option => {
-        option.addEventListener('click', (e) => {
-          document.querySelectorAll('.wallpaper-option').forEach(o => o.classList.remove('active'));
-          e.target.classList.add('active');
-          currentWallpaper = e.target.dataset.id;
+      const grid = $("wallpaperGrid");
+      grid.innerHTML = "";
+
+      wallpapers.forEach(wall => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = `wall ${currentWallpaper === wall.id ? "active" : ""}`;
+        option.title = wall.name;
+        option.style.background = wall.url
+          ? (wall.url.startsWith("linear-gradient") ? wall.url : `url("${wall.url}") center / cover`)
+          : "#000";
+        option.innerHTML = `<span>${safeText(wall.name)}</span>`;
+
+        option.addEventListener("click", async () => {
+          currentWallpaper = wall.id;
           applyWallpaper(currentWallpaper);
-          saveUserData();
+          renderWallpaperOptions();
+          await syncSettings();
+          showToast("Background saved");
         });
+
+        grid.appendChild(option);
       });
     }
 
-    document.getElementById('customizeBtn').addEventListener('click', () => {
-      renderWallpaperOptions();
-      customizeModal.classList.add('active');
-      modalOverlay.classList.add('active');
-    });
-
-    document.getElementById('custCancel').addEventListener('click', () => {
-      customizeModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    });
-
-    document.getElementById('custSave').addEventListener('click', () => {
-      const url = document.getElementById('customWallInput').value.trim();
-      if (url) {
-        currentWallpaper = url;
-        applyWallpaper(currentWallpaper);
-        saveUserData();
-        document.getElementById('customWallInput').value = '';
-      }
-      customizeModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    });
-
-    function renderShortcuts() {
-      shortcutsGrid.innerHTML = '';
-      shortcuts.forEach((sc, index) => {
-        const item = document.createElement('a');
-        item.href = sc.url;
-        item.className = 'shortcut-item';
-        item.style.textDecoration = 'none';
-        
-        const initial = sc.name.charAt(0).toUpperCase();
-        item.innerHTML = `
-          <div class="shortcut-remove" data-idx="${index}">&times;</div>
-          <div class="shortcut-icon-circle">${initial}</div>
-          <div class="shortcut-title">${sc.name}</div>
-        `;
-        shortcutsGrid.appendChild(item);
-      });
-
-      const addBtn = document.createElement('div');
-      addBtn.className = 'shortcut-item';
-      addBtn.innerHTML = `
-        <div class="shortcut-icon-circle" style="background: rgba(20, 46, 35, 0.8);">+</div>
-        <div class="shortcut-title">Add shortcut</div>
-      `;
-      addBtn.onclick = () => {
-        document.getElementById('scName').value = '';
-        document.getElementById('scUrl').value = '';
-        shortcutModal.classList.add('active');
-        modalOverlay.classList.add('active');
-      };
-      shortcutsGrid.appendChild(addBtn);
-
-      document.querySelectorAll('.shortcut-remove').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault(); e.stopPropagation();
-          shortcuts.splice(btn.dataset.idx, 1);
-          renderShortcuts();
-          saveUserData();
-        });
-      });
+    function openModal(id) {
+      closeMenus();
+      overlay.classList.add("open");
+      $(id).classList.add("open");
+      if (id === "wallpaperModal") renderWallpaperOptions();
     }
 
-    document.getElementById('scCancel').onclick = () => {
-      shortcutModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    };
-    
-    document.getElementById('scSave').onclick = () => {
-      const name = document.getElementById('scName').value.trim();
-      let url = document.getElementById('scUrl').value.trim();
-      if (name && url) {
-        if (!url.startsWith('http')) url = 'https://' + url;
-        shortcuts.push({ name, url });
-        renderShortcuts();
-        saveUserData();
+    function closeModals() {
+      document.querySelectorAll(".modal.open").forEach(el => el.classList.remove("open"));
+      overlay.classList.remove("open");
+    }
+
+    function closeMenus() {
+      $("appsPanel").classList.remove("open");
+      $("accountPanel").classList.remove("open");
+    }
+
+    function showToast(message) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function formatResultUrl(url) {
+      try {
+        return new URL(url).hostname.replace(/^www\./, "");
+      } catch {
+        return "";
       }
-      shortcutModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    };
+    }
 
-    modalOverlay.addEventListener('click', () => {
-      shortcutModal.classList.remove('active');
-      customizeModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    });
+    function resultIcon(item) {
+      const domain = formatResultUrl(item.link || "");
+      return domain
+        ? `<div class="source-dot">${safeText(domain.charAt(0).toUpperCase())}</div>`
+        : `<div class="source-dot">J</div>`;
+    }
 
-    document.getElementById('closeAccPanel').addEventListener('click', () => accountPanel.classList.remove('active'));
+    function enterResults(query) {
+      document.body.classList.add("results");
+      $("resultsSearchInput").value = query;
+      $("resultsClearBtn").style.display = query ? "grid" : "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && e.target.value.trim()) {
-        performSearch(e.target.value.trim());
-      }
-    });
-
-    async function performSearch(query) {
+    async function performSearch(rawQuery) {
+      const query = rawQuery.trim();
       if (!query) return;
-      mainLayout.classList.add('has-results');
-      document.body.style.background = '#121212';
-      document.getElementById('backgroundOverlay').style.display = 'none';
 
-      resultsList.innerHTML = '';
-      loading.style.display = 'block';
+      if (/^(https?:\/\/|www\.)/i.test(query)) {
+        const url = query.startsWith("http") ? query : `https://${query}`;
+        window.location.href = url;
+        return;
+      }
+
+      enterResults(query);
+      $("resultsList").innerHTML = '<div style="color:#8ab4f8;padding:10px 0">Searching Jxo…</div>';
+      $("resultsToolbar").textContent = "Searching";
 
       try {
-        const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
+        const url = `https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(GOOGLE_API_KEY)}&cx=${encodeURIComponent(GOOGLE_CX)}&q=${encodeURIComponent(query)}`;
         const response = await fetch(url);
         const data = await response.json();
-        
-        loading.style.display = 'none';
-        if (data.items && data.items.length > 0) {
-          resultsList.innerHTML = data.items.map(item => `
-            <div class="result-item">
-              <div class="result-url">${item.displayLink}</div>
-              <a href="${item.link}" class="result-title" target="_blank">${item.htmlTitle}</a>
-              <div class="result-desc">${item.htmlSnippet}</div>
-            </div>
-          `).join('');
-        } else {
-          resultsList.innerHTML = '<div style="color:#e3e3e3">No results found.</div>';
+
+        if (!response.ok) {
+          throw new Error(data?.error?.message || "Search request failed");
         }
-      } catch (err) {
-        loading.style.display = 'none';
-        resultsList.innerHTML = '<div style="color:#ff6b6b">Error fetching results.</div>';
+
+        const items = Array.isArray(data.items) ? data.items : [];
+        $("resultsToolbar").textContent = items.length ? `${items.length} results` : "No results";
+
+        if (!items.length) {
+          $("resultsList").innerHTML = `
+            <div class="result-item">
+              <div class="result-desc">No results found for “${safeText(query)}”.</div>
+            </div>
+          `;
+          return;
+        }
+
+        $("resultsList").innerHTML = items.map(item => {
+          const title = item.htmlTitle || item.title || "Untitled result";
+          const snippet = item.htmlSnippet || item.snippet || "";
+          const displayLink = item.displayLink || formatResultUrl(item.link || "");
+          return `
+            <article class="result-item">
+              <div class="result-source">
+                ${resultIcon(item)}
+                <span>${safeText(displayLink)}</span>
+              </div>
+              <a class="result-title" href="${safeText(item.link || "#")}" target="_blank" rel="noopener">${title}</a>
+              <div class="result-url">${safeText(item.formattedUrl || item.link || "")}</div>
+              <div class="result-desc">${snippet}</div>
+            </article>
+          `;
+        }).join("");
+      } catch (error) {
+        $("resultsToolbar").textContent = "Search error";
+        $("resultsList").innerHTML = `
+          <div class="result-item">
+            <div class="result-desc">
+              Search could not be completed. ${safeText(error.message || "Please try again.")}
+            </div>
+          </div>
+        `;
       }
     }
 
-    initializeApp();
+    function wireSearch(inputId, clearId) {
+      const input = $(inputId);
+      const clear = $(clearId);
+
+      input.addEventListener("input", () => {
+        clear.style.display = input.value ? "grid" : "none";
+      });
+
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter") performSearch(input.value);
+        if (e.key === "Escape") {
+          input.value = "";
+          clear.style.display = "none";
+        }
+      });
+
+      clear.addEventListener("click", () => {
+        input.value = "";
+        clear.style.display = "none";
+        input.focus();
+      });
+    }
+
+    $("appsBtn").addEventListener("click", e => {
+      e.stopPropagation();
+      $("appsPanel").classList.toggle("open");
+      $("accountPanel").classList.remove("open");
+    });
+
+    $("customizeBtn").addEventListener("click", () => openModal("wallpaperModal"));
+
+    $("cancelWallpaper").addEventListener("click", closeModals);
+    $("cancelShortcut").addEventListener("click", closeModals);
+    overlay.addEventListener("click", closeModals);
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.close;
+        if ($(id).classList.contains("modal")) closeModals();
+        else $(id).classList.remove("open");
+        if (![...document.querySelectorAll(".modal.open")].length) overlay.classList.remove("open");
+      });
+    });
+
+    $("manageBtn").addEventListener("click", () => {
+      if (typeof Jxo !== "undefined") Jxo.openAccountManager();
+    });
+
+    $("applyCustomWallpaper").addEventListener("click", async () => {
+      const url = $("customWallpaperInput").value.trim();
+      if (!url) return;
+
+      currentWallpaper = url;
+      applyWallpaper(currentWallpaper);
+      await syncSettings();
+      $("customWallpaperInput").value = "";
+      closeModals();
+      showToast("Custom background saved");
+    });
+
+    $("saveShortcut").addEventListener("click", async () => {
+      const name = $("shortcutName").value.trim();
+      let url = $("shortcutUrl").value.trim();
+
+      if (!name || !url) return;
+      if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+
+      shortcuts.push({ name, url });
+      renderShortcuts();
+      await syncSettings();
+
+      $("shortcutName").value = "";
+      $("shortcutUrl").value = "";
+      closeModals();
+      showToast("Shortcut added");
+    });
+
+    $("aiBtn").addEventListener("click", () => {
+      window.location.href = "https://jxoj.github.io/Ozo/";
+    });
+
+    document.addEventListener("click", e => {
+      if (!e.target.closest("#appsPanel") && !e.target.closest("#appsBtn") &&
+          !e.target.closest("#accountPanel") && !e.target.closest("#profileBtn")) {
+        closeMenus();
+      }
+    });
+
+    wireSearch("searchInput", "clearBtn");
+    wireSearch("resultsSearchInput", "resultsClearBtn");
+
+    // Initialize local settings immediately so the page is black even before Jxo loads.
+    loadLocalSettings();
+    renderShortcuts();
+    loadApps();
+    loadJxoAccount();
   </script>
 </body>
 </html>
