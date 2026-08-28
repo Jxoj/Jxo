@@ -1,803 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jxo Search</title>
-  <style>
-    :root {
-      --bg-color: #1b3b32;
-      --surface-dark: #202124;
-      --surface-hover: rgba(255, 255, 255, 0.1);
-      --text-main: #e3e3e3;
-      --text-muted: #9aa0a6;
-      --search-bg: #ffffff;
-      --primary-accent: #8ab4f8;
-      --panel-bg: #1e1e1e;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jxo Search</title>
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        :root {
+            --text-main: #202124;
+            --text-secondary: #4d5156;
+            --link-color: #1a0dab;
+            --border-color: #dfe1e5;
+            --card-bg: #f8f9fa;
+        }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: arial, sans-serif;
+            color: var(--text-main);
+        }
 
-    body {
-      background: var(--bg-color);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow-x: hidden;
-      transition: background 0.3s;
-    }
+        a {
+            text-decoration: none;
+            color: var(--link-color);
+        }
 
-    .background-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      z-index: 0;
-      transition: opacity 0.5s;
-      opacity: 0;
-    }
+        a:hover {
+            text-decoration: underline;
+        }
 
-    .background-overlay::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(180deg, rgba(18, 18, 18, 0.6) 0%, rgba(18, 18, 18, 0.4) 50%, rgba(18, 18, 18, 0.9) 100%);
-    }
+        /* --- Header Styles --- */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            gap: 24px;
+            border-bottom: 1px solid transparent;
+        }
 
-    /* --- TOP BAR --- */
-    .top-bar {
-      position: absolute;
-      top: 0; right: 0;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      z-index: 50;
-    }
+        .logo {
+            font-size: 28px;
+            font-weight: 500;
+            letter-spacing: -1px;
+            text-decoration: none;
+        }
+        
+        .logo span:nth-child(1) { color: #4285f4; }
+        .logo span:nth-child(2) { color: #ea4335; }
+        .logo span:nth-child(3) { color: #fbbc05; }
 
-    .icon-btn {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: transparent;
-      border: none;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            max-width: 690px;
+            height: 44px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 0 16px;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
+        }
 
-    .icon-btn:hover { background: var(--surface-hover); }
-    .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .search-bar:hover {
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.2);
+        }
 
-    .profile-btn {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: transparent;
-      color: white;
-      border: none;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .sign-in-btn {
-      background: var(--primary-accent);
-      color: #121212;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 24px;
-      font-weight: 600;
-      cursor: pointer;
-    }
+        .search-bar input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 0 12px;
+        }
 
-    /* --- MAIN CONTENT (NTP) --- */
-    .content-wrapper {
-      position: relative;
-      z-index: 1;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 120px;
-      transition: all 0.4s ease;
-      width: 100%;
-    }
+        .search-icons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #70757a;
+        }
 
-    .content-wrapper.has-results {
-      padding-top: 20px;
-      align-items: flex-start;
-      padding-left: 30px;
-      background: rgba(18, 18, 18, 0.95);
-      min-height: 100vh;
-    }
+        .search-icons span {
+            cursor: pointer;
+            font-size: 22px;
+        }
 
-    .ntp-only {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      transition: opacity 0.3s;
-    }
-    .has-results .ntp-only { display: none; }
+        .search-icons span.mic { color: #4285f4; }
+        .search-icons span.lens { color: #ea4335; }
+        .search-icons span.search-btn { color: #4285f4; }
 
-    .logo-container {
-      width: 280px;
-      height: 120px;
-      background: #35363a;
-      border-radius: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 30px;
-      position: relative;
-    }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+            color: #5f6368;
+        }
 
-    .jxo-logo {
-      font-size: 80px;
-      font-weight: 800;
-      letter-spacing: -3px;
-      background: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800') center/cover;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      user-select: none;
-    }
+        .header-actions span {
+            cursor: pointer;
+        }
 
-    /* --- SEARCH BAR --- */
-    .search-box-container {
-      width: 100%;
-      max-width: 650px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      transition: all 0.4s ease;
-    }
+        .profile-btn {
+            width: 32px;
+            height: 32px;
+            background-color: #d93025;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
 
-    .search-box {
-      width: 100%;
-      height: 52px;
-      background: var(--search-bg);
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
+        /* --- Main Content Layout --- */
+        main {
+            max-width: 1000px;
+            margin: 0 0 0 160px; /* Offset to align with Google's typical layout */
+            padding-bottom: 50px;
+        }
 
-    .search-box .icon {
-      color: #5f6368;
-      width: 24px; height: 24px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-    }
-    .search-box .icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+        /* Top Media Cards Container */
+        .media-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            margin-top: 12px;
+        }
 
-    .search-input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      outline: none;
-      color: #202124;
-      font-size: 16px;
-      padding: 0 12px;
-    }
-    .search-input::placeholder { color: #5f6368; }
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
 
-    .ai-mode-btn {
-      background: #f1f3f4;
-      border: none;
-      border-radius: 20px;
-      padding: 6px 12px;
-      color: #202124;
-      font-size: 13px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      margin-left: 8px;
-    }
-    .ai-mode-btn svg { width: 14px; height: 14px; stroke: #202124; stroke-width: 2; }
+        .card-img-wrapper {
+            position: relative;
+            background: #222;
+        }
 
-    /* --- SHORTCUTS --- */
-    .shortcuts-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      justify-content: center;
-      max-width: 650px;
-      margin-top: 32px;
-    }
+        .card-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            opacity: 0.8;
+        }
 
-    .shortcut-item {
-      width: 90px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 8px;
-      border-radius: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
-      position: relative;
-    }
+        .duration-badge {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
 
-    .shortcut-item:hover { background: var(--surface-hover); }
-    .shortcut-item:hover .shortcut-remove { display: flex; }
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
 
-    .shortcut-icon-circle {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .shortcut-title {
-      font-size: 13px;
-      color: var(--text-main);
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    }
+        .card-content {
+            padding: 12px 16px;
+        }
 
-    .shortcut-remove {
-      position: absolute;
-      top: 0; right: 8px;
-      width: 20px; height: 20px;
-      background: #333;
-      border-radius: 50%;
-      display: none;
-      align-items: center; justify-content: center;
-      font-size: 12px; color: white;
-      z-index: 2;
-    }
+        .source {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
 
-    /* --- CUSTOMIZE BTN --- */
-    .customize-btn {
-      position: fixed;
-      bottom: 20px; right: 20px;
-      background: rgba(20, 46, 35, 0.7);
-      backdrop-filter: blur(8px);
-      color: var(--text-main);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 10px 16px;
-      border-radius: 24px;
-      font-size: 13px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      z-index: 10;
-      transition: background 0.2s;
-    }
-    .customize-btn:hover { background: rgba(20, 46, 35, 0.9); }
-    .customize-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .source img { width: 14px; height: 14px; border-radius: 2px; }
 
-    /* --- MODALS & PANELS --- */
-    .panel {
-      position: absolute;
-      top: 60px; right: 16px;
-      background: var(--panel-bg);
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      z-index: 1000;
-      display: none;
-      overflow: hidden;
-    }
-    .panel.active { display: block; }
+        .title {
+            font-size: 16px;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
 
-    /* Account Panel Specifics */
-    .account-panel { width: 360px; padding: 16px; }
-    .panel-header {
-      text-align: center; font-size: 12px; color: var(--text-muted);
-      margin-bottom: 12px; position: relative;
-    }
-    .panel-close {
-      position: absolute; right: 0; top: -4px;
-      background: none; border: none; color: var(--text-main);
-      font-size: 18px; cursor: pointer; padding: 4px;
-    }
-    
-    .current-user-card {
-      background: #121212;
-      border-radius: 20px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .current-user-info { flex: 1; overflow: hidden; }
-    .current-user-name { font-weight: 500; font-size: 15px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .current-user-email { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Main Video Card */
+        .main-video {
+            flex: 2;
+            max-width: 440px;
+        }
+        .main-video .card-img-wrapper { height: 240px; }
 
-    .manage-jxo-btn {
-      display: block; width: 100%; text-align: center;
-      background: #121212; padding: 12px; border-radius: 24px;
-      margin-top: 8px; font-size: 14px; font-weight: 500;
-      cursor: pointer; border: none; color: var(--text-main);
-      transition: background 0.2s;
-    }
-    .manage-jxo-btn:hover { background: #2a2a2a; }
+        /* Secondary Video Card */
+        .secondary-video {
+            flex: 1.2;
+            max-width: 260px;
+        }
+        .secondary-video .card-img-wrapper { height: 140px; }
+        .secondary-video .desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .secondary-video .date {
+            font-size: 12px;
+            color: #70757a;
+            margin-top: 6px;
+        }
 
-    /* App Launcher Panel */
-    .apps-panel { width: 320px; padding: 20px; }
-    .apps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .no-apps-msg {
-      grid-column: 1 / -1;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 14px;
-      padding: 20px 0;
-    }
-    .app-icon {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      padding: 12px 8px; border-radius: 16px; cursor: pointer; text-decoration: none;
-    }
-    .app-icon:hover { background: #2a2a2a; }
-    .app-icon-circle { width: 44px; height: 44px; border-radius: 50%; background: var(--primary-accent); display: flex; align-items: center; justify-content: center; color: #121212; font-weight: bold; font-size: 20px; }
-    .app-icon-label { font-size: 12px; color: var(--text-main); text-align: center; }
+        /* Right Side Info Cards */
+        .info-cards {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 12px;
+        }
 
-    /* Generic Modal Styling */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1500; display: none; }
-    .modal-overlay.active { display: block; }
-    .custom-modal {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: var(--panel-bg); padding: 24px; border-radius: 24px;
-      z-index: 2000; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      display: none; width: 340px;
-    }
-    .custom-modal.active { display: block; }
-    .custom-modal h3 { margin-bottom: 16px; font-size: 16px; }
-    .modal-input { width: 100%; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 12px; color: white; margin-bottom: 12px; outline: none; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-    .modal-btn { padding: 8px 16px; border-radius: 16px; border: none; cursor: pointer; font-weight: 500; font-size: 13px; }
-    .modal-btn.cancel { background: transparent; color: var(--primary-accent); }
-    .modal-btn.save { background: var(--primary-accent); color: #121212; }
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
 
-    /* Wallpaper Grid specific to the Customize Modal */
-    #customizeModal { width: 480px; max-width: 90vw; }
-    .wallpaper-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; max-height: 280px; overflow-y: auto;
-    }
-    .wallpaper-option {
-      aspect-ratio: 16/9; border-radius: 12px; cursor: pointer; border: 3px solid transparent; background-size: cover; background-position: center; transition: all 0.2s;
-    }
-    .wallpaper-option:hover { transform: scale(1.03); border-color: rgba(138, 180, 248, 0.5); }
-    .wallpaper-option.active { border-color: var(--primary-accent); box-shadow: 0 0 0 2px var(--primary-accent); }
-    .wallpaper-option.default-wall {
-      background: var(--bg-color); display: flex; align-items: center; justify-content: center; color: var(--text-main); font-size: 13px; font-weight: 500;
-    }
+        .info-card h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .info-card .value {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
 
-    /* --- SEARCH RESULTS VIEW --- */
-    .results-area { width: 100%; max-width: 700px; display: none; position: relative; z-index: 2; }
-    .has-results .results-area { display: block; }
-    .has-results .search-box-container { margin-bottom: 30px; }
-    .has-results .search-box { background: #303134; border: 1px solid #3c4043; } 
-    .has-results .search-input { color: #e3e3e3; }
-    
-    .result-item { margin-bottom: 24px; }
-    .result-url { color: #9aa0a6; font-size: 12px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-    .result-title { color: #8ab4f8; font-size: 20px; font-weight: 400; margin-bottom: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
-    .result-title:hover { text-decoration: underline; }
-    .result-desc { color: #bdc1c6; font-size: 14px; line-height: 1.6; }
-    
-    .loading { color: #8ab4f8; margin-top: 20px; }
-  </style>
+        .info-card img.avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            align-self: flex-start;
+        }
+        
+        .spotify-card {
+            grid-column: 1 / -1; /* span full width */
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .spotify-card .text-content { flex-grow: 1; padding-right: 12px; }
+        .spotify-card img { width: 64px; height: 64px; border-radius: 8px; }
+
+        /* --- Divider --- */
+        hr.divider {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 24px 0;
+        }
+
+        /* --- Bottom Section (Lyrics & Overview) --- */
+        .bottom-section {
+            display: flex;
+            gap: 40px;
+        }
+
+        .lyrics-col {
+            flex: 2;
+            max-width: 600px;
+        }
+
+        .overview-col {
+            flex: 1;
+            padding-left: 24px;
+            border-left: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: normal;
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arrow-btn {
+            background: var(--card-bg);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .lyrics-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .source-attribution {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .source-attribution a { color: var(--text-secondary); text-decoration: underline; }
+
+        /* Overview Table */
+        .overview-box {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .overview-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .overview-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .overview-label {
+            width: 80px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .overview-value {
+            color: var(--text-main);
+            font-size: 14px;
+        }
+        
+        .overview-value.dotted {
+            border-bottom: 1px dotted var(--text-secondary);
+            cursor: pointer;
+        }
+
+    </style>
 </head>
 <body>
-  <div class="background-overlay" id="backgroundOverlay"></div>
-  <div class="modal-overlay" id="modalOverlay"></div>
 
-  <!-- Top Navigation Bar (Removed Dummy Links) -->
-  <div class="top-bar">
-    <button class="icon-btn" id="appLauncherBtn" title="Jxo apps">
-      <svg viewBox="0 0 24 24"><path d="M12 16c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm-6 12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm12 12c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm0-6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"></path></svg>
-    </button>
-    <div id="accountArea">
-      <button class="sign-in-btn" id="loginBtn">Sign In</button>
-    </div>
-  </div>
-
-  <!-- Apps Launcher Panel (Dynamic via JS) -->
-  <div class="panel apps-panel" id="appsPanel">
-    <div class="apps-grid" id="appsGrid">
-      <!-- Injected by loadApps() or fallback error message -->
-    </div>
-  </div>
-
-  <!-- Account Management Panel -->
-  <div class="panel account-panel" id="accountPanel">
-    <div class="panel-header">
-      Managed by Jxo Network
-      <button class="panel-close" id="closeAccPanel">&times;</button>
-    </div>
-    
-    <div class="current-user-card">
-      <div class="profile-btn" id="panelAvatar" style="width:48px;height:48px;"><img src="assets/jxo.png" alt="Profile"></div>
-      <div class="current-user-info">
-        <div class="current-user-name" id="panelName">User Name</div>
-        <div class="current-user-email" id="panelEmail">user@example.com</div>
-      </div>
-    </div>
-
-    <button class="manage-jxo-btn" id="manageJxoBtn">
-      Manage your Jxo Account
-    </button>
-  </div>
-
-  <!-- Main Area -->
-  <div class="content-wrapper" id="mainLayout">
-    
-    <div class="ntp-only">
-      <div class="logo-container">
-        <div class="jxo-logo">Jxo</div>
-      </div>
-    </div>
-
-    <div class="search-box-container">
-      <div class="search-box">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </div>
-        <input type="text" class="search-input" id="searchInput" placeholder="Ask Jxo" autocomplete="off">
-        <button class="ai-mode-btn" id="aiModeBtn">AI Mode</button>
-      </div>
-
-      <div class="ntp-only">
-        <div class="shortcuts-grid" id="shortcutsGrid"></div>
-      </div>
-    </div>
-
-    <!-- Results Area -->
-    <div class="results-area" id="resultsArea">
-      <div class="loading" id="loading" style="display: none;">Searching Jxo...</div>
-      <div id="resultsList"></div>
-    </div>
-
-  </div>
-
-  <button class="customize-btn ntp-only" id="customizeBtn">
-    Customize Jxo
-  </button>
-
-  <!-- Add Shortcut Modal -->
-  <div class="custom-modal" id="shortcutModal">
-    <h3>Add shortcut</h3>
-    <input type="text" class="modal-input" id="scName" placeholder="Name">
-    <input type="text" class="modal-input" id="scUrl" placeholder="URL">
-    <div class="modal-actions">
-      <button class="modal-btn cancel" id="scCancel">Cancel</button>
-      <button class="modal-btn save" id="scSave">Done</button>
-    </div>
-  </div>
-
-  <!-- Customize Background Modal -->
-  <div class="custom-modal" id="customizeModal">
-    <h3>Customize background</h3>
-    <div class="wallpaper-grid" id="wallpaperGrid"></div>
-    <input type="text" class="modal-input" id="customWallInput" placeholder="Paste custom image URL...">
-    <div class="modal-actions">
-      <button class="modal-btn cancel" id="custCancel">Close</button>
-      <button class="modal-btn save" id="custSave">Apply Custom URL</button>
-    </div>
-  </div>
-
-  <script src="https://jxoj.github.io/Jxo/sdk.js"></script>
-  <script>
-    const APP_ID = "com.jxo.search";
-    const GOOGLE_API_KEY = "AIzaSyB55B9TOOSy1IcIr4AO0ibpqilV9Hpw4P4";
-    const GOOGLE_CX = "d4ae4a6121f9c4d65";
-    
-    let currentUser = null;
-    let shortcuts = [];
-    let currentWallpaper = 'default';
-
-    const wallpapers = [
-      { id: 'default', url: '', name: 'Default Green' },
-      { id: 'space', url: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1920', name: 'Space' }
-    ];
-
-    const accountArea = document.getElementById('accountArea');
-    const accountPanel = document.getElementById('accountPanel');
-    const appsPanel = document.getElementById('appsPanel');
-    const appsGrid = document.getElementById('appsGrid');
-    const mainLayout = document.getElementById('mainLayout');
-    const searchInput = document.getElementById('searchInput');
-    const shortcutsGrid = document.getElementById('shortcutsGrid');
-    const resultsList = document.getElementById('resultsList');
-    const loading = document.getElementById('loading');
-    const shortcutModal = document.getElementById('shortcutModal');
-    const customizeModal = document.getElementById('customizeModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-
-    document.getElementById('appLauncherBtn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      appsPanel.classList.toggle('active');
-      accountPanel.classList.remove('active');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!appsPanel.contains(e.target) && e.target.id !== 'appLauncherBtn') appsPanel.classList.remove('active');
-      if (!accountPanel.contains(e.target) && !e.target.closest('#profileBtn')) accountPanel.classList.remove('active');
-    });
-
-    // Dynamic Apps Loading
-    async function loadApps() {
-      try {
-        const res = await fetch('/assets/apps.json');
-        if (!res.ok) throw new Error('File not found');
-        const apps = await res.json();
+    <!-- Header Section -->
+    <header>
+        <a href="#" class="logo"><span>J</span><span>x</span><span>o</span></a>
         
-        if (apps.length === 0) throw new Error('No apps');
-        
-        appsGrid.innerHTML = apps.map(app => `
-          <a href="${app.url}" class="app-icon">
-            <div class="app-icon-circle" style="background:${app.color || 'var(--primary-accent)'}">${app.initial || app.name.charAt(0)}</div>
-            <div class="app-icon-label">${app.name}</div>
-          </a>
-        `).join('');
-      } catch (err) {
-        appsGrid.innerHTML = '<div class="no-apps-msg">no apps available</div>';
-      }
-    }
-
-    async function initializeApp() {
-      await loadApps();
-      try {
-        if(typeof Jxo !== 'undefined'){
-            await Jxo.init(APP_ID, { rememberUser: true });
-            currentUser = Jxo.getUser();
-        }
-        updateUIForUser();
-        if (currentUser) {
-          await loadUserData();
-        } else {
-          renderShortcuts(); 
-          applyWallpaper('default');
-        }
-      } catch (error) {
-        updateUIForUser();
-        renderShortcuts();
-        applyWallpaper('default');
-      }
-    }
-
-    function updateUIForUser() {
-      if (currentUser) {
-        const photoUrl = currentUser.photoURL || 'assets/jxo.png';
-        accountArea.innerHTML = `<button class="profile-btn" id="profileBtn"><img src="${photoUrl}" alt="Profile"></button>`;
-        
-        document.getElementById('panelAvatar').innerHTML = `<img src="${photoUrl}" alt="Profile">`;
-        document.getElementById('panelName').textContent = currentUser.displayName || "Jxo User";
-        document.getElementById('panelEmail').textContent = currentUser.email;
-        
-        document.getElementById('profileBtn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          accountPanel.classList.toggle('active');
-          appsPanel.classList.remove('active');
-        });
-        
-        document.getElementById('manageJxoBtn').addEventListener('click', () => { Jxo.openAccountManager(); });
-      } else {
-        accountArea.innerHTML = `<button class="sign-in-btn" id="loginBtn">Sign In</button>`;
-        document.getElementById('loginBtn').addEventListener('click', () => { if(typeof Jxo !== 'undefined') Jxo.login(); });
-      }
-    }
-
-    async function loadUserData() {
-      if (!Jxo.isAuthenticated()) return;
-      try {
-        const data = await Jxo.getAppData();
-        shortcuts = data.shortcuts || [];
-        currentWallpaper = data.wallpaper || 'default';
-        
-        renderShortcuts();
-        applyWallpaper(currentWallpaper);
-      } catch (error) { console.error(error); }
-    }
-
-    async function saveUserData() {
-      if (!Jxo.isAuthenticated()) return;
-      try { await Jxo.updateAppData({ shortcuts, wallpaper: currentWallpaper }); } catch (e) {}
-    }
-
-    function applyWallpaper(idOrUrl) {
-      const overlay = document.getElementById('backgroundOverlay');
-      const wp = wallpapers.find(w => w.id === idOrUrl);
-      let finalUrl = wp ? wp.url : idOrUrl;
-
-      if (finalUrl && finalUrl !== 'default') {
-        overlay.style.backgroundImage = `url(${finalUrl})`;
-        overlay.style.opacity = '1';
-        document.body.style.background = '#0a0a0a';
-      } else {
-        overlay.style.backgroundImage = '';
-        overlay.style.opacity = '0';
-        document.body.style.background = 'var(--bg-color)';
-      }
-    }
-
-    function renderWallpaperOptions() {
-      const grid = document.getElementById('wallpaperGrid');
-      grid.innerHTML = wallpapers.map(w => {
-        const isActive = currentWallpaper === w.id || (w.id === 'default' && !wallpapers.find(x => x.id === currentWallpaper) && currentWallpaper === 'default');
-        return `
-          <div class="wallpaper-option ${isActive ? 'active' : ''} ${w.id === 'default' ? 'default-wall' : ''}" 
-               data-id="${w.id}" 
-               style="${w.url ? `background-image: url(${w.url})` : ''}"
-               title="${w.name}">
-               ${w.id === 'default' ? 'Default' : ''}
-          </div>
-        `;
-      }).join('');
-      
-      document.querySelectorAll('.wallpaper-option').forEach(option => {
-        option.addEventListener('click', (e) => {
-          document.querySelectorAll('.wallpaper-option').forEach(o => o.classList.remove('active'));
-          e.target.classList.add('active');
-          currentWallpaper = e.target.dataset.id;
-          applyWallpaper(currentWallpaper);
-          saveUserData();
-        });
-      });
-    }
-
-    document.getElementById('customizeBtn').addEventListener('click', () => {
-      renderWallpaperOptions();
-      customizeModal.classList.add('active');
-      modalOverlay.classList.add('active');
-    });
-
-    document.getElementById('custCancel').addEventListener('click', () => {
-      customizeModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    });
-
-    document.getElementById('custSave').addEventListener('click', () => {
-      const url = document.getElementById('customWallInput').value.trim();
-      if (url) {
-        currentWallpaper = url;
-        applyWallpaper(currentWallpaper);
-        saveUserData();
-        document.getElementById('customWallInput').value = '';
-      }
-      customizeModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    });
-
-    function renderShortcuts() {
-      shortcutsGrid.innerHTML = '';
-      shortcuts.forEach((sc, index) => {
-        const item = document.createElement('a');
-        item.href = sc.url;
-        item.className = 'shortcut-item';
-        item.style.textDecoration = 'none';
-        
-        const initial = sc.name.charAt(0).toUpperCase();
-        item.innerHTML = `
-          <div class="shortcut-remove" data-idx="${index}">&times;</div>
-          <div class="shortcut-icon-circle">${initial}</div>
-          <div class="shortcut-title">${sc.name}</div>
-        `;
-        shortcutsGrid.appendChild(item);
-      });
-
-      const addBtn = document.createElement('div');
-      addBtn.className = 'shortcut-item';
-      addBtn.innerHTML = `
-        <div class="shortcut-icon-circle" style="background: rgba(20, 46, 35, 0.8);">+</div>
-        <div class="shortcut-title">Add shortcut</div>
-      `;
-      addBtn.onclick = () => {
-        document.getElementById('scName').value = '';
-        document.getElementById('scUrl').value = '';
-        shortcutModal.classList.add('active');
-        modalOverlay.classList.add('active');
-      };
-      shortcutsGrid.appendChild(addBtn);
-
-      document.querySelectorAll('.shortcut-remove').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault(); e.stopPropagation();
-          shortcuts.splice(btn.dataset.idx, 1);
-          renderShortcuts();
-          saveUserData();
-        });
-      });
-    }
-
-    document.getElementById('scCancel').onclick = () => {
-      shortcutModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    };
-    
-    document.getElementById('scSave').onclick = () => {
-      const name = document.getElementById('scName').value.trim();
-      let url = document.getElementById('scUrl').value.trim();
-      if (name && url) {
-        if (!url.startsWith('http')) url = 'https://' + url;
-        shortcuts.push({ name, url });
-        renderShortcuts();
-        saveUserData();
-      }
-      shortcutModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    };
-
-    modalOverlay.addEventListener('click', () => {
-      shortcutModal.classList.remove('active');
-      customizeModal.classList.remove('active');
-      modalOverlay.classList.remove('active');
-    });
-
-    document.getElementById('closeAccPanel').addEventListener('click', () => accountPanel.classList.remove('active'));
-
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && e.target.value.trim()) {
-        performSearch(e.target.value.trim());
-      }
-    });
-
-    async function performSearch(query) {
-      if (!query) return;
-      mainLayout.classList.add('has-results');
-      document.body.style.background = '#121212';
-      document.getElementById('backgroundOverlay').style.display = 'none';
-
-      resultsList.innerHTML = '';
-      loading.style.display = 'block';
-
-      try {
-        const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        loading.style.display = 'none';
-        if (data.items && data.items.length > 0) {
-          resultsList.innerHTML = data.items.map(item => `
-            <div class="result-item">
-              <div class="result-url">${item.displayLink}</div>
-              <a href="${item.link}" class="result-title" target="_blank">${item.htmlTitle}</a>
-              <div class="result-desc">${item.htmlSnippet}</div>
+        <div class="search-bar">
+            <input type="text" value="Adele hello">
+            <div class="search-icons">
+                <!-- Using generic close icon as clear button if needed, omit for exact match -->
+                <span class="material-symbols-outlined mic">mic</span>
+                <span class="material-symbols-outlined lens">center_focus_strong</span>
+                <span class="material-symbols-outlined search-btn">search</span>
             </div>
-          `).join('');
-        } else {
-          resultsList.innerHTML = '<div style="color:#e3e3e3">No results found.</div>';
-        }
-      } catch (err) {
-        loading.style.display = 'none';
-        resultsList.innerHTML = '<div style="color:#ff6b6b">Error fetching results.</div>';
-      }
-    }
+        </div>
 
-    initializeApp();
-  </script>
+        <div class="header-actions">
+            <span class="material-symbols-outlined">share</span>
+            <span class="material-symbols-outlined">apps</span>
+            <div class="profile-btn">J</div>
+        </div>
+    </header>
+
+    <!-- Main Results Section -->
+    <main>
+        
+        <div class="media-container">
+            <!-- Main Video -->
+            <div class="card main-video">
+                <div class="card-img-wrapper">
+                    <!-- Placeholder representing the Adele Music Video -->
+                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Adele Video Thumbnail">
+                    <div class="play-button"><span class="material-symbols-outlined" style="font-size: 32px;">play_arrow</span></div>
+                    <span class="duration-badge">6:07</span>
+                </div>
+                <div class="card-content">
+                    <div class="source">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YT">
+                        YouTube • Adele
+                    </div>
+                    <div class="title">Adele - Hello (Official Music Video)</div>
+                </div>
+            </div>
+
+            <!-- Secondary Video -->
+            <div class="card secondary-video">
+                <div class="card-img-wrapper">
+                    <!-- Placeholder representing the Lyric Video -->
+                    <img src="https://images.unsplash.com/photo-1458560871784-56d23406c091?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Lyric Video Thumbnail">
+                    <div class="duration-badge">4:50</div>
+                </div>
+                <div class="card-content">
+                    <div class="source">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YT">
+                        YouTube • Rare Vibes
+                    </div>
+                    <div class="title">Adele - Hello (Lyrics)</div>
+                    <div class="desc">Adele - Hello (Lyrics) Turn on notifications to stay updated with new uploads! Adele https://myspace.com/adelelondon ...</div>
+                    <div class="date">May 6, 2021</div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar Cards -->
+            <div class="info-cards">
+                <!-- Artist Card -->
+                <div class="info-card">
+                    <div>
+                        <h4>Artist <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; float: right;">chevron_right</span></h4>
+                        <div class="value">Adele</div>
+                    </div>
+                    <img class="avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="Adele">
+                </div>
+                
+                <!-- Released Card -->
+                <div class="info-card" style="justify-content: flex-start;">
+                    <h4>Released</h4>
+                    <div class="value" style="margin-top: 32px;">2015</div>
+                </div>
+
+                <!-- Spotify Card -->
+                <div class="info-card spotify-card">
+                    <div class="text-content">
+                        <div class="source" style="margin-bottom: 8px;">
+                            <span style="color: #1DB954; font-weight: bold; font-size: 16px;">Spotify</span> - Web Play...
+                        </div>
+                        <div class="title" style="font-size: 14px;">Hello - song and lyrics by Adele | Spotify</div>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Spotify Album Art">
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Bottom Section: Lyrics & Overview -->
+        <div class="bottom-section">
+            <!-- Lyrics Column -->
+            <div class="lyrics-col">
+                <h2>Lyrics <div class="arrow-btn"><span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span></div></h2>
+                
+                <div class="lyrics-text">
+                    Hello, it's me<br>
+                    I was wondering if after all these years you'd like to meet<br>
+                    To go over everything<br>
+                    They say that time's supposed to heal ya, but I ain't done much healing... 
+                    <a href="#">Full lyrics</a>
+                </div>
+
+                <div class="source-attribution">
+                    Source: <a href="#">Musixmatch</a>
+                </div>
+            </div>
+
+            <!-- Overview Column -->
+            <div class="overview-col">
+                <h2>Overview</h2>
+                <div class="overview-box">
+                    <div class="overview-row">
+                        <div class="overview-label">Artist</div>
+                        <div class="overview-value dotted">Adele</div>
+                    </div>
+                    <div class="overview-row">
+                        <div class="overview-label">Released</div>
+                        <div class="overview-value">2015</div>
+                    </div>
+                    <div class="overview-row">
+                        <div class="overview-label">Album</div>
+                        <div class="overview-value dotted">25</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
 </body>
 </html>
