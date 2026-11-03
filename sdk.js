@@ -13,12 +13,14 @@
   class JxoSDK {
     constructor() {
       this.initialized = false;
-      this.token = null; // Track user token securely
+      this.token = null; 
+      this.appCheckToken = null; // Added to handle App Check rule enforcement
     }
 
-    async init(appId) {
+    async init(appId, appCheckToken = null) {
       if (!appId || typeof appId !== 'string') throw new Error('App ID required');
       if (this.initialized) return;
+      this.appCheckToken = appCheckToken;
 
       currentAppId = appId.replace(/[^a-zA-Z0-9._-]/g, '');
       try {
@@ -43,72 +45,61 @@
       }
     }
 
+    _getHeaders() {
+      const headers = { 'Authorization': `Bearer ${this.token}` };
+      if (this.appCheckToken) {
+        headers['X-Firebase-AppCheck'] = this.appCheckToken;
+      }
+      return headers;
+    }
+
     async getAppData() {
       if (!this.isAuthenticated() || !currentAppId) throw new Error('Not authenticated');
-      try {
-        const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}`;
-        const response = await fetch(url, {
-          headers: { 'Authorization': `Bearer ${this.token}` }
-        });
-        if (response.status === 404) return {};
-        if (!response.ok) throw new Error('Failed to fetch app data');
-        const doc = await response.json();
-        return this._firestoreToObject(doc.fields || {});
-      } catch (error) {
-        throw error;
-      }
+      const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}`;
+      const response = await fetch(url, { headers: this._getHeaders() });
+      if (response.status === 404) return {};
+      if (!response.ok) throw new Error('Failed to fetch app data');
+      const doc = await response.json();
+      return this._firestoreToObject(doc.fields || {});
     }
 
     async updateAppData(data) {
       if (!this.isAuthenticated() || !currentAppId) throw new Error('Not authenticated');
       if (JSON.stringify(data).length > MAX_APP_DATA_SIZE) throw new Error('Exceeds limit');
-      try {
-        const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}?updateMask.fieldPaths=*`;
-        const response = await fetch(url, {
-          method: 'PATCH',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.token}`
-          },
-          body: JSON.stringify({ fields: this._objectToFirestore(data) })
-        });
-        if (!response.ok) throw new Error('Failed to update app data');
-      } catch (error) {
-        throw error;
-      }
+      
+      // FIXED: Generate the updateMask dynamically from your object keys
+      const maskParams = Object.keys(data)
+        .map(key => `updateMask.fieldPaths=${encodeURIComponent(key)}`)
+        .join('&');
+
+      const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}?${maskParams}`;
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...this._getHeaders() },
+        body: JSON.stringify({ fields: this._objectToFirestore(data) })
+      });
+      if (!response.ok) throw new Error('Failed to update app data');
     }
 
     async setAppData(data) {
       if (!this.isAuthenticated() || !currentAppId) throw new Error('Not authenticated');
       if (JSON.stringify(data).length > MAX_APP_DATA_SIZE) throw new Error('Exceeds limit');
-      try {
-        const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}`;
-        const response = await fetch(url, {
-          method: 'PATCH',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.token}`
-          },
-          body: JSON.stringify({ fields: this._objectToFirestore(data) })
-        });
-        if (!response.ok) throw new Error('Failed to set app data');
-      } catch (error) {
-        throw error;
-      }
+      
+      // No updateMask performs an overwrite of the document
+      const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}`;
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...this._getHeaders() },
+        body: JSON.stringify({ fields: this._objectToFirestore(data) })
+      });
+      if (!response.ok) throw new Error('Failed to set app data');
     }
 
     async deleteAppData() {
       if (!this.isAuthenticated() || !currentAppId) throw new Error('Not authenticated');
-      try {
-        const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}`;
-        const response = await fetch(url, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${this.token}` }
-        });
-        if (response.status !== 404 && !response.ok) throw new Error('Failed to delete app data');
-      } catch (error) {
-        throw error;
-      }
+      const url = `https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents/users/${currentUser.uid}/apps/${currentAppId}`;
+      const response = await fetch(url, { method: 'DELETE', headers: this._getHeaders() });
+      if (response.status !== 404 && !response.ok) throw new Error('Failed to delete app data');
     }
 
     async _loadTrustedSites() {
