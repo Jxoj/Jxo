@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jxo Auth Bridge</title>
+</head>
+<body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+const FIREBASE_API_KEY = "AIzaSyDUFBrPl8YJwkmqwibq730VX2mtCkxaMeM";
+const TRUSTED_SITES_URL = "https://jxoj.github.io/Jxo/ts.json";
+const FIRESTORE_ROOT = "https://firestore.googleapis.com/v1/projects/jxoaccount/databases/(default)/documents";
+const MAX_APP_DATA_SIZE = 10240;
+
+const auth = getAuth(initializeApp({
+  apiKey: FIREBASE_API_KEY,
+  authDomain: "jxoaccount.firebaseapp.com",
+  projectId: "jxoaccount"
+}));
+
+let trustedSites = [];
+let authReady = false;
+let currentUser = null;
+
+function originIsTrusted(origin) {
+  try {
+    const url = new URL(origin);
+    return trustedSites.some(site => {
+      const hostname = String(site).replace(/^https?:\/\//, "").replace(/\/$/, "");
+      return url.hostname === hostname || url.hostname.endsWith(`.${hostname}`);
+    });
+  } catch {
+    return false;
+  }
+}
+
+function firestoreToObject(fields = {}) {
+  const result = {};
+  for (const [key, field] of Object.entries(fields)) {
+    if (field.stringValue !== undefined) result[key] = field.stringValue;
+    else if (field.integerValue !== undefined) result[key] = Number(field.integerValue);
+    else if (field.doubleValue !== undefined) result[key] = field.doubleValue;
+    else if (field.booleanValue !== undefined) result[key] = field.booleanValue;
+    else if (field.nullValue !== undefined) result[key] = null;
+    else if (field.mapValue) result[key] = firestoreToObject(field.mapValue.fields);
+  }
+  return result;
+}
+
+function objectToFirestore(value) {
+  const fields = {};
+  for (const [key, item] of Object.entries(value || {})) {
+    if (typeof item === "string") fields[key] = { stringValue: item };
+    else if (typeof item === "number") fields[key] = Number.isInteger(item) ? { integerValue: String(item) } : { doubleValue: item };
+    else if (typeof item === "boolean") fields[key] = { booleanValue: item };
+    else if (item === null) fields[key] = { nullValue: null };
+    else if (typeof item === "object" && !Array.isArray(item)) fields[key] = { mapValue: { fields: objectToFirestore(item) } };
+  }
+  return fields;
+}
+
+async function requestFirestore(action, appId, data) {
+  if (!currentUser) throw new Error("Not authenticated");
+  const safeAppId = String(appId || "").replace(/[^a-zA-Z0-9._-]/g, "");
+  if (!safeAppId) throw new Error("App ID required");
+  if (data !== undefined && JSON.stringify(data).length > MAX_APP_DATA_SIZE) throw new Error("App data exceeds 10 KB");
+
+  const token = await currentUser.getIdToken();
+  const documentUrl = `${FIRESTORE_ROOT}/users/${encodeURIComponent(currentUser.uid)}/apps/${encodeURIComponent(safeAppId)}`;
+  const headers = { Authorization: `Bearer ${token}` };
+  let response;
+
+  if (action === "get") {
+    response = await fetch(documentUrl, { headers });
+    if (response.status === 404) return {};
+    if (!response.ok) throw new Error("Failed to fetch app data");
+    return firestoreToObject((await response.json()).fields);
+  }
+
+  if (action === "update" || action === "set") {
+    const query = action === "update"
+      ? `?${Object.keys(data || {}).map(key => `updateMask.fieldPaths=${encodeURIComponent(key)}`).join("&")}`
+      : "";
+    response = await fetch(documentUrl + query, {
+      method: "PATCH",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ fields: objectToFirestore(data) })
+    });
+    if (!response.ok) throw new Error(`Failed to ${action} app data`);
+    return {};
+  }
+
+  if (action === "delete") {
+    response = await fetch(documentUrl, { method: "DELETE", headers });
+    if (response.status !== 404 && !response.ok) throw new Error("Failed to delete app data");
+    return {};
+  }
+
+  throw new Error("Unknown bridge action");
+}
+
+function reply(event, requestId, result, error = null) {
+  event.source?.postMessage({ source: "jxo-auth-bridge", requestId, result, error }, event.origin);
+}
+
+window.addEventListener("message", async event => {
+  if (event.source !== window.parent || !originIsTrusted(event.origin)) return;
+  const message = event.data || {};
+  if (message.target !== "jxo-auth-bridge" || !message.requestId) return;
+
+  try {
+    if (!authReady) throw new Error("Authentication is still loading");
+    if (message.action === "user") {
+      let profile = {};
+      if (currentUser) {
+        const token = await currentUser.getIdToken();
+        const profileResponse = await fetch(`${FIRESTORE_ROOT}/users/${encodeURIComponent(currentUser.uid)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (profileResponse.ok) profile = firestoreToObject((await profileResponse.json()).fields);
+      }
+      reply(event, message.requestId, currentUser ? {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        displayName: currentUser.displayName || null,
+        photoURL: currentUser.photoURL || profile.photoURL || null,
+        emailVerified: currentUser.emailVerified
+      } : null);
+      return;
+    }
+    const result = await requestFirestore(message.action, message.appId, message.data);
+    reply(event, message.requestId, result);
+  } catch (error) {
+    reply(event, message.requestId, null, error.message || "Bridge request failed");
+  }
+});
+
+try {
+  const response = await fetch(TRUSTED_SITES_URL, { cache: "no-store" });
+  const data = await response.json();
+  trustedSites = Array.isArray(data.trustedSites) ? data.trustedSites : [];
+} catch (error) {
+  console.error("Unable to load trusted sites", error);
+}
+
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  authReady = true;
+  window.parent.postMessage({ source: "jxo-auth-bridge", type: "ready" }, "*");
+});
+</script>
+</body>
+</html>

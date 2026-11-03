@@ -623,6 +623,31 @@
       .results-search { width: 100%; }
       .wallpaper-grid { grid-template-columns: repeat(2,1fr); }
     }
+
+    body.apps-only { background: #09090b; }
+    body.apps-only .wallpaper,
+    body.apps-only .scrim,
+    body.apps-only .topbar,
+    body.apps-only .home,
+    body.apps-only .results-view,
+    body.apps-only .customize,
+    body.apps-only .overlay,
+    body.apps-only .modal,
+    body.apps-only .toast { display: none !important; }
+    body.apps-only .panel#appsPanel {
+      position: static;
+      display: block;
+      width: min(720px, 100%);
+      max-width: none;
+      min-height: 100vh;
+      margin: 0 auto;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    body.apps-only .panel-inner { padding: 28px 20px; }
+    body.apps-only .panel-title button { display: none; }
   </style>
 </head>
 <body>
@@ -741,10 +766,6 @@
     const APP_ID = "com.jxo.search";
     const STORAGE_KEY = "jxo-search-settings-v2";
     const SHORTCUTS_KEY = "jxo-search-shortcuts-v2";
-
-    // Keep the existing Google Custom Search configuration used by this page.
-    const GOOGLE_API_KEY = "AIzaSyB55B9TOOSy1IcIr4AO0ibpqilV9Hpw4P4";
-    const GOOGLE_CX = "d4ae4a6121f9c4d65";
 
     const wallpapers = [
       { id: "default", name: "Black", url: "" },
@@ -1063,7 +1084,7 @@
       $("resultsToolbar").textContent = "Searching";
 
       try {
-        const url = `https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(GOOGLE_API_KEY)}&cx=${encodeURIComponent(GOOGLE_CX)}&q=${encodeURIComponent(query)}`;
+        const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -1071,7 +1092,14 @@
           throw new Error(data?.error?.message || "Search request failed");
         }
 
-        const items = Array.isArray(data.items) ? data.items : [];
+        const items = (data.RelatedTopics || [])
+          .flatMap(topic => topic.Topics || topic)
+          .filter(item => item && item.FirstURL)
+          .map(item => ({
+            title: item.Text || "Search result",
+            link: item.FirstURL,
+            snippet: item.Text || ""
+          }));
         $("resultsToolbar").textContent = items.length ? `${items.length} results` : "No results";
 
         if (!items.length) {
@@ -1201,6 +1229,11 @@
 
     wireSearch("searchInput", "clearBtn");
     wireSearch("resultsSearchInput", "resultsClearBtn");
+
+    if (new URLSearchParams(window.location.search).get("mode") === "apps") {
+      document.body.classList.add("apps-only");
+      $("appsPanel").classList.add("open");
+    }
 
     // Initialize local settings immediately so the page is black even before Jxo loads.
     loadLocalSettings();

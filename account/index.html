@@ -49,6 +49,8 @@ html,body{
   font-weight:700;
 }
 
+.logo-circle img{width:72%;height:72%;object-fit:contain}
+
 h1{margin:0 0 6px;font-weight:500}
 .sub{color:#aaa;margin-bottom:18px}
 
@@ -349,9 +351,10 @@ h1{margin:0 0 6px;font-weight:500}
 <div class="card">
 
 <div class="logo">
-  <div class="logo-circle">J</div>
-  <strong style="font-size:28px">Jxo</strong>
+  <div class="logo-circle"><img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Jxo"></div>
 </div>
+
+<div id="trustWarning" style="display:none;background:#3a1a1a;border:1px solid #ff8a80;color:#ffb4ab;border-radius:12px;padding:12px 14px;margin-bottom:18px;font-size:13px;line-height:1.45"></div>
 
 <h1 id="title">Sign in</h1>
 <div class="sub" id="subtitle">Choose an account</div>
@@ -591,6 +594,12 @@ async function checkTrustedSite(){
     isTrustedSite = trustedSitesData.trustedSites.some(site => 
       currentDomain === site || currentDomain.endsWith('.' + site)
     );
+
+    if(!isTrustedSite){
+      const warning = document.getElementById("trustWarning");
+      warning.textContent = trustedSitesData.warningMessage || "Security warning: only sign in on a trusted Jxo domain.";
+      warning.style.display = "block";
+    }
     
     const hasSeenWarning = localStorage.getItem('jxoFirstTimeWarning');
     
@@ -800,18 +809,11 @@ function proceed(){
 }
 
 function handleSuccess(user){
-  user.getIdToken().then(token=>{
-    const r=new URLSearchParams(location.search).get("redirect");
-    if(r) {
-      location.href=r+"#token="+token;
-    } else {
-      status.textContent = "✓ Signed in successfully!";
-      status.style.color = "#81c784";
-      setTimeout(() => {
-        renderAccounts();
-      }, 1500);
-    }
-  });
+  const r=new URLSearchParams(location.search).get("redirect");
+  if(r) { location.href=r; return; }
+  status.textContent = "Signed in successfully!";
+  status.style.color = "#81c784";
+  setTimeout(() => renderAccounts(), 1500);
 }
 
 /* ---- TOGGLE ---- */

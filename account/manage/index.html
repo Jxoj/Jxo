@@ -12,12 +12,12 @@
 
 <style>
   :root {
-    --bg-color: #202124;
-    --surface-color: #292a2d;
-    --surface-hover: #3c4043;
-    --text-primary: #e8eaed;
-    --text-secondary: #9aa0a6;
-    --border-color: #5f6368;
+    --bg-color: #09090b;
+    --surface-color: #18181b;
+    --surface-hover: #27272a;
+    --text-primary: #f5f5f5;
+    --text-secondary: #a1a1aa;
+    --border-color: rgba(255,255,255,.12);
     --blue-accent: #8ab4f8;
     --blue-accent-hover: #a8c7fa;
     --blue-bg: #0b57d0;
@@ -57,6 +57,19 @@
     align-items: center;
     gap: 16px;
   }
+
+  .apps-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(8, 11, 18, .92);
+    padding: 28px;
+  }
+  .apps-modal.active { display: flex; flex-direction: column; }
+  .apps-modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .apps-modal-title { margin:0; font-size:18px; font-weight:600; }
+  .apps-frame { flex:1; width:100%; border:1px solid var(--border-color); border-radius:14px; background:#09090b; }
 
   .icon-btn {
     color: var(--text-primary);
@@ -232,34 +245,6 @@
     margin: 0 0 32px;
   }
 
-  .search-bar {
-    display: flex;
-    align-items: center;
-    background: #303134;
-    border-radius: 24px;
-    padding: 12px 24px;
-    width: 100%;
-    max-width: 600px;
-    gap: 16px;
-  }
-
-  .search-bar .material-symbols-outlined {
-    color: var(--text-secondary);
-  }
-
-  .search-bar input {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-size: 16px;
-    flex: 1;
-    outline: none;
-  }
-
-  .search-bar input::placeholder {
-    color: var(--text-secondary);
-  }
-
   /* ---- SETTINGS CARDS (For other tabs) ---- */
   .card {
     background: transparent;
@@ -368,47 +353,6 @@
   .status.error { color: var(--danger-color); }
 
   /* ---- FOOTER ---- */
-  .footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px 40px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    border-top: 1px solid var(--bg-color); /* Kept invisible to match screenshot, but structured */
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 24px;
-  }
-
-  .footer-links span {
-    cursor: pointer;
-  }
-
-  .footer-links span:hover {
-    color: var(--text-primary);
-  }
-
-  .footer-blurb {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    max-width: 400px;
-    line-height: 1.5;
-  }
-
-  .shield-icon {
-    color: var(--blue-accent);
-    font-size: 18px;
-  }
-
-  .footer-blurb a {
-    color: var(--blue-accent);
-    text-decoration: none;
-  }
-
   /* ---- MODALS & LOADING ---- */
   #photoFile { display: none; }
 
@@ -484,7 +428,7 @@
     .nav-item { flex-shrink: 0; padding: 8px 12px; }
     .nav-item span:not(.nav-icon) { display: none; } /* Hide text on mobile nav */
     .content-area { padding: 16px; }
-    .footer { flex-direction: column; gap: 16px; text-align: center; }
+    .apps-modal { padding: 14px; }
   }
 </style>
 </head>
@@ -494,14 +438,22 @@
 <!-- Top Navigation -->
 <div class="topbar">
   <div class="logo-area">
-    Jxo Account
+    <img src="https://jxoj.github.io/Jxo/assets/jxo.png" alt="Jxo" style="width:28px;height:28px;object-fit:contain">
+    <span>Account</span>
   </div>
   <div class="top-right">
-    <div class="icon-btn"><span class="material-symbols-outlined">help</span></div>
-    <div class="icon-btn"><span class="material-symbols-outlined">apps</span></div>
+    <button class="icon-btn" id="appsButton" type="button" title="Jxo apps" aria-label="Jxo apps"><span class="material-symbols-outlined">apps</span></button>
     <div class="mini-avatar" id="miniAvatar">?</div>
   </div>
 </div>
+
+<section class="apps-modal" id="appsModal" aria-label="Jxo apps">
+  <div class="apps-modal-head">
+    <h2 class="apps-modal-title">Jxo apps</h2>
+    <button class="icon-btn" id="closeAppsButton" type="button" title="Close apps" aria-label="Close apps"><span class="material-symbols-outlined">close</span></button>
+  </div>
+  <iframe class="apps-frame" src="https://jxoj.github.io/Jxo/?mode=apps" title="Jxo apps"></iframe>
+</section>
 
 <div class="main-layout">
   <!-- Sidebar -->
@@ -543,10 +495,6 @@
         <h1 class="hero-name" id="heroNameText">Loading...</h1>
         <p class="hero-email" id="heroEmailText">Loading...</p>
         
-        <div class="search-bar">
-          <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search Jxo Account">
-        </div>
       </div>
     </div>
 
@@ -621,20 +569,6 @@
     </div>
 
   </main>
-</div>
-
-<!-- Footer matching screenshot -->
-<div class="footer">
-  <div class="footer-links">
-    <span>Privacy</span>
-    <span>Terms</span>
-    <span>Help</span>
-    <span>About</span>
-  </div>
-  <div class="footer-blurb">
-    Only you can see your settings. You might also want to review your settings for Maps, Search, or whichever services you use most. Jxo keeps your data private, safe, and secure. <a href="#">Learn more</a>
-    <span class="material-symbols-outlined shield-icon">gpp_good</span>
-  </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -735,9 +669,15 @@ const modalStatus = document.getElementById("modalStatus");
 
 const deleteModal = document.getElementById("deleteModal");
 const loading = document.getElementById("loading");
+const appsModal = document.getElementById("appsModal");
+const appsButton = document.getElementById("appsButton");
+const closeAppsButton = document.getElementById("closeAppsButton");
 
 let currentUser = null;
 let uploadedPhotoBase64 = null;
+
+appsButton.addEventListener("click", () => appsModal.classList.add("active"));
+closeAppsButton.addEventListener("click", () => appsModal.classList.remove("active"));
 
 /* ---- AUTH CHECK ---- */
 onAuthStateChanged(auth, async (user) => {
@@ -765,8 +705,8 @@ async function loadUserData(){
   
   try{
     const docSnap = await getDoc(doc(db, "users", currentUser.uid));
-    if(docSnap.exists() && docSnap.data().photoURL){
-      const photoURL = docSnap.data().photoURL;
+    const photoURL = currentUser.photoURL || (docSnap.exists() && docSnap.data().photoURL);
+    if(photoURL){
       profilePicContainer.innerHTML = `<img src="${photoURL}" alt="Profile">`;
       miniAvatar.innerHTML = `<img src="${photoURL}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
     }
