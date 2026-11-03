@@ -61,15 +61,21 @@
   .apps-modal {
     display: none;
     position: fixed;
-    inset: 0;
+    top: 62px;
+    right: 24px;
+    width: min(390px, calc(100vw - 32px));
+    height: min(500px, calc(100vh - 86px));
     z-index: 1200;
-    background: rgba(8, 11, 18, .92);
-    padding: 28px;
+    background: #18181b;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 24px 70px rgba(0,0,0,.45);
   }
   .apps-modal.active { display: flex; flex-direction: column; }
   .apps-modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
   .apps-modal-title { margin:0; font-size:18px; font-weight:600; }
-  .apps-frame { flex:1; width:100%; border:1px solid var(--border-color); border-radius:14px; background:#09090b; }
+  .apps-frame { flex:1; min-height:0; width:100%; border:1px solid var(--border-color); border-radius:12px; background:#09090b; }
 
   .icon-btn {
     color: var(--text-primary);
@@ -428,7 +434,7 @@
     .nav-item { flex-shrink: 0; padding: 8px 12px; }
     .nav-item span:not(.nav-icon) { display: none; } /* Hide text on mobile nav */
     .content-area { padding: 16px; }
-    .apps-modal { padding: 14px; }
+    .apps-modal { top: 58px; right: 16px; height: min(500px, calc(100vh - 74px)); padding: 12px; }
   }
 </style>
 </head>

@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Jxo Search",
+    "url": "https://jxoj.github.io/Jxo/",
+    "icon": "https://jxoj.github.io/Jxo/assets/jxo.png"
+  },
+  {
+    "name": "Account",
+    "url": "https://jxoj.github.io/Jxo/account/manage/",
+    "icon": "https://jxoj.github.io/Jxo/assets/jxo.png"
+  },
+  {
+    "name": "Safe Domains",
+    "url": "https://jxoj.github.io/Jxo/sd/",
+    "initial": "S",
+    "color": "#14532d"
+  },
+  {
+    "name": "Ozo",
+    "url": "https://jxoj.github.io/Ozo/",
+    "initial": "O",
+    "color": "#713f12"
+  }
+]
